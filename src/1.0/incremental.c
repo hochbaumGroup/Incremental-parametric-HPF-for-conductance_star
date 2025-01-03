@@ -186,9 +186,6 @@ static int weightedEdges = 0;
 static uint lowestStrongLabel = 1;
 static uint highestStrongLabel = 1;
 static int weightedNodes = 0;
-static int printDimacs = 0;
-static int printGraph = 0;
-static int printHPF = 0;
 static int sourceSetSize = 1;
 
 static double initTime = 0.0f;
@@ -233,178 +230,6 @@ static int numGaps = 0;
 static llint numArcScans = 0;
 #endif
 
-void checkArcs(){
-	int i = 0;
-	int okay = 1;
-	for (i=0; i<numArcs; i++)
-	{
-		long long intercept = arcList[i].intercept;
-		long long slope = arcList[i].slope;
-		long long capacity = arcList[i].capacity;
-		int from = arcList[i].from;
-		int to = arcList[i].to;
-
-		
-		if (intercept < 0)
-		{
-			okay = 0;
-			printf("c arc (%d,%d) has negative intercept %lld\n", from, to, intercept);
-		}
-		if (intercept % APP_VAL != 0)
-		{
-			okay = 0;
-			printf("c arc (%d,%d) has incorrect intercept %lld\n", from, to, intercept);
-		}
-		if (capacity < 0)
-		{
-			okay = 0;
-			printf("c arc (%d,%d) has negative capacity %lld\n", from, to, capacity);
-		}
-	}
-
-	if (!okay)
-	{
-		exit(-1);
-	}
-	else
-	{
-		printf("c every arc is ok\n");
-	}
-}
-
-
-void printToHPF()
-{
-	int i = 0;
-
-	printf("p max %d %d\n", numNodes, numArcs);
-	printf("n %d s\n", source+1);
-	printf("n %d t\n", sink+1);
-	
-	for (i=0; i<numArcs; ++i)
-	{
-		int from = arcList[i].from;
-		int to = arcList[i].to;
-		long long intercept = arcList[i].intercept;
-		long long slope = arcList[i].slope;
-		long long capacity = arcList[i].capacity;
-
-		printf("a %d %d %lld\n", from+1, to+1, capacity);
-
-	}
-
-}
-
-void printToDimacs()
-{
-	int i = 0;
-
-	printf("p %d %d 0 %lf 1\n", numNodes, numArcs,(double) currLambda/APP_VAL );
-	printf("n 1 s\n");
-	printf("n 0 t\n");
-	
-	for (i=0; i<numArcs; ++i)
-	{
-		int from = arcList[i].from;
-		int to = arcList[i].to;
-		if (from == source || to==sink)
-		{
-			swap(&from, &to);
-		}
-		long long intercept = arcList[i].intercept;
-		long long slope = arcList[i].slope;
-
-		printf("a %d %d %lld %lld\n", from, to, intercept/APP_VAL, slope);
-
-	}
-
-}
-
-
-void printToWeightedGraph()
-{
-	int i = 0;
-
-	
-	int printArcs = 0;
-	for (i=0; i<numArcs; ++i)
-	{
-		int from = arcList[i].from;
-		int to = arcList[i].to;
-		if (to == sink)
-		{
-			continue;
-		}
-		else if (from == source)
-		{
-			printArcs++;
-			// \bar{R} node
-			//printf("%d %d %d\n", to-1, numNodes-1, arcList[i].intercept/APP_VAL); 
-		}
-		else if (from < to)
-		{
-			printArcs++;
-			//printf("%d %d %d\n", from-1, to-1, 1);
-		}
-	}
-
-	printf("%d %d\n", numNodes-1, printArcs);
-
-	for (i=0; i<numArcs; ++i)
-	{
-		int from = arcList[i].from;
-		int to = arcList[i].to;
-		if (to == sink)
-		{
-			continue;
-		}
-		else if (from == source)
-		{
-			// \bar{R} node
-			printf("%d %d %d\n", to-1, numNodes-1, arcList[i].intercept/APP_VAL); 
-		}
-		else if (from < to)
-		{
-			printf("%d %d %d\n", from-1, to-1, 1);
-		}
-	}
-
-}
-
-static void printDebugOrigLambda(){
-
-	int i = 0;
-
-//static int *orEdges = NULL;
-//static int *invMapping = NULL;
-//static char *inOrigS = NULL;
-//
-	long long cut = 0;
-	for (i=0; i<m; i++)
-	{
-		int from = orEdges[2*i];
-		int to = orEdges[2*i+1];
-
-		if (inOrigS[from] != inOrigS[to])
-		{
-			cut++;
-		}
-	}
-
-	long long qs = 0;
-
-	for (i=1; i<=n; i++)
-	{
-		if(inOrigS[i])
-		{
-			qs += origDeg[i];
-		}
-	}
-
-	printf("c ORIG C(S, S_) / q(S) = %lld / %lld  =  %lf\n", cut, qs, (double)cut/qs);
-
-
-}
 
 static void
 computeNumeratorDenominator(long long *num, long long *den)
@@ -438,7 +263,6 @@ computeNumeratorDenominator(long long *num, long long *den)
 	}
 
 	printf("c COMP C(S, S_) / q(S) = %lld / %lld  =  %lf\n", *num, *den, (double)(*num)/(*den));
-  printDebugOrigLambda();
 	//*den/=2;
 
 
@@ -2245,18 +2069,6 @@ void parseParameters(int argc, char *argv[])
 		{
 			dumpSourceSetFile = fopen( argv[++i], "w");
 		}
-    else if (strcmp(argv[i], "--printDimacs") == 0)
-		{
-			printDimacs = 1;
-		}
-    else if (strcmp(argv[i], "--printGraph") == 0)
-		{
-			printGraph = 1;
-		}
-    else if (strcmp(argv[i], "--printHPF") == 0)
-		{
-			printHPF = 1;
-		}
     else
     {
       printf("%s: invalid argument %s\n", argv[0], argv[1]);
@@ -2274,32 +2086,11 @@ main(int argc, char ** argv)
 
   parseParameters(argc, argv);
 
-	if ( !printDimacs && !printGraph )
-	{
-  	printf ("c Incremental cut procedure for minimum conductance\n");
-	}
+	printf ("c Incremental cut procedure for minimum conductance*\n");
 
   double thetime = timer();
   readGraphFile();
-	checkArcs();
 
-	if ( printDimacs)
-	{
-		printToDimacs();
-		return 0;
-	}
-
-	if (printHPF)
-	{
-		printToHPF();
-		return 0;
-	}
-
-	if (printGraph)
-	{
-		printToWeightedGraph();
-		return 0;
-	}
 
 #ifdef PROGRESS
   printf ("c Finished reading file.\n"); fflush (stdout);
