@@ -38,5 +38,4 @@ Where `R_SIZE=K` is the size of the initial subset, `ORIG_EDGES_IN_R` is the num
 
 See directory [examples](examples) for sample input files.
 
-# License
 
