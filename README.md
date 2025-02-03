@@ -1,4 +1,4 @@
-# Incremental cut procedure for Densest Subgraph Problem
+# Incremental cut procedure for conductance* Problem
 
 This repository contains an implementation of the incremental cut procedure for the conductance* Problem. It receives an undirected graph and an initial partition, given as an initial subset `R`. It returns the optimal conductance for a subset `R'` of `R`.
 
