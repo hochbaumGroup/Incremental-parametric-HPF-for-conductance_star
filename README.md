@@ -1,6 +1,11 @@
 # Incremental cut procedure for conductance* Problem
 
-This repository contains an implementation of the incremental cut procedure for the conductance* Problem. It receives an undirected graph and an initial partition, given as an initial subset `R`. It returns the optimal conductance for a subset `R'` of `R`.
+This repository contains an implementation of the incremental cut procedure for the conductance* Problem. The problem is formulated as
+
+
+$\min_{S \subseteq R} \left[ C(S,\bar{S}) - \lambda~q(S) \right].$
+
+Where $R$ is a subset of the input graph. Note that, if $R$ is the entire graph, then the initial solution is optimal, and has an objective function value of 0.
 
 # Compiling
 
