@@ -25,10 +25,10 @@ The executable reads the input file from stdin. To execute one of the examples, 
 
 # Input format
 
-The input graph, with N nodes and M edges, and the  is to be provided in the following text format:
+The input graph, with ``n`` nodes and ``m`` edges, and the  is to be provided in the following text format:
 
 ```
-N M R_SIZE ORIG_EDGES_IN_R R_CONNECTED_TO_COMP
+n m R_SIZE ORIG_EDGES_IN_R R_CONNECTED_TO_COMP
 1ST_NODE_IN_R
 2ND_NODE_IN_R
 ...
