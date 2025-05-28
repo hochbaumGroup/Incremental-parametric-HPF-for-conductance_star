@@ -262,7 +262,7 @@ computeNumeratorDenominator(long long *num, long long *den)
 
 	}
 
-	printf("c COMP C(S, S_) / q(S) = %lld / %lld  =  %lf\n", *num, *den, (double)(*num)/(*den));
+	// printf("c COMP C(S, S_) / q(S) = %lld / %lld  =  %lf\n", *num, *den, (double)(*num)/(*den));
 	//*den/=2;
 
 
@@ -676,6 +676,10 @@ readGraphFile (void)
       long long w = 1;
       u = readInt();
       v = readInt();
+      if (weightedEdges)
+      {
+        w = readInt();
+      }
 			orEdges[2*i] = u;
 			orEdges[2*i+1] = v;
 			origDeg[u]++;
@@ -700,19 +704,19 @@ readGraphFile (void)
 			//goes to collapsed
 			if (to == source)
 			{
-				degToSink[from-2] ++;
+				degToSink[from-2] += w;
 				collapsedEdges++;
 				continue;
 			}
 
 			if (from >= 2)
 			{
-      	degrees[from-2]++;
+      	degrees[from-2] += w;
 			}
 
 			if (to >= 2)
 			{
-        degrees[to-2]++;
+        degrees[to-2] += w;
 			}
       ac = &arcList[currArc++];
       ac->from = from;
@@ -802,7 +806,7 @@ readGraphFile (void)
 	long long denominator = 0;
 
 	computeNumeratorDenominator(&numerator, &denominator);
-	printf("c C(S,S-)=%lld, d(S)=%lld\n", numerator, denominator);
+	// printf("c C(S,S-)=%lld, d(S)=%lld\n", numerator, denominator);
 
 	currLambda = numerator/ denominator;
 	if (isLambdaInjected)
@@ -810,7 +814,7 @@ readGraphFile (void)
   	currLambda = (long long) (injectedLambda*APP_VAL);
 	}
    
-  printf("c Initial lambda = %lld\n", currLambda);
+  printf("c Initial lambda = %lf\n", (double)currLambda/APP_VAL);
 
   for(i=0; i<numArcs; ++i)
   {
@@ -1516,9 +1520,9 @@ incrementalCut(void)
   long long numerator = 0;
   long long denominator = 0;
   copySourceSet();
-	printf("c B lambda;cut;deg;time;relabels\n");
+	// printf("c B lambda;cut;deg;time;relabels\n");
 	computeNumeratorDenominator( &numerator, &denominator);
-	printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)currLambda/APP_VAL, numerator, denominator, timer()-thetime, numRelabels );
+	// printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)currLambda/APP_VAL, numerator, denominator, timer()-thetime, numRelabels );
   int iteration = 0;
   printf("c Iteration %d\n", iteration++);
   printf("c Computing mincut for lambda = %lf\n", (double)currLambda/APP_VAL);
@@ -1533,17 +1537,17 @@ incrementalCut(void)
   }
 
 
-	long long mincut = computeMinCut();
-	printf("c Initial mincut is = %lld\n", mincut);
+	// long long mincut = computeMinCut();
+	// printf("c Initial mincut is = %lld\n", mincut);
 
 	computeNumeratorDenominator( &numerator, &denominator);
 	//printf("c B %lf;%lld;%lld\n", (double)currLambda/APP_VAL, numerator, denominator );
   //currLambda = css / qs;
 
-  printf("c C(S,S-)/d(S) = %lld/%lld = %lld\n", numerator, denominator, ceil_div(numerator, denominator));
+  // printf("c C(S,S-)/d(S) = %lld/%lld = %lld\n", numerator, denominator, ceil_div(numerator, denominator));
   long long val = numerator - currLambda * denominator;
 
-  printf("C(S,S-) - lambda * d(S) = %lld\n", val);
+  // printf("C(S,S-) - lambda * d(S) = %lld\n", val);
 	int better = 1;
 
   while ( better)
@@ -1552,6 +1556,7 @@ incrementalCut(void)
 		better = 0;
     printf("c Iteration %d\n", iteration++);
     currLambda = numerator / denominator ;//ceil_div(numerator, denominator);
+    if (denominator == 0 ) break;
 		theparam = currLambda;
     if (currLambda <  bestLambda)
     {
@@ -1576,8 +1581,8 @@ incrementalCut(void)
 
 		if( denominator != 0 )
 		{
-	    printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)currLambda/APP_VAL, numerator, denominator, timer()-thetime, numRelabels );
-  		printf("c C(S,S-)/d(S) = %lld/%lld = %lld\n", numerator, denominator, numerator/denominator);
+	    //printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)currLambda/APP_VAL, numerator, denominator, timer()-thetime, numRelabels );
+  		//printf("c C(S,S-)/d(S) = %lld/%lld = %lld\n", numerator, denominator, numerator/denominator);
 		}
 		else
 		{
@@ -1585,7 +1590,7 @@ incrementalCut(void)
 		}
 		val = numerator - currLambda * denominator;
     
-  	printf("C(S,S-) - lambda * d(S) = %lld\n", val);
+  	//printf("C(S,S-) - lambda * d(S) = %lld\n", val);
   }
 
 
@@ -1598,12 +1603,20 @@ incrementalCut(void)
   }
   double totalTime = timer()-thetime;
 
-  printf("c %d,%d,%.4lf,%.4lf,%.4lf,%.4lf,%d\n", n, m, initTime, totalTime, (double)initLambda/APP_VAL, (double)bestLambda/APP_VAL,iteration);
-	if ( dumpSourceSetFile != NULL )
+  //printf("c %d,%d,%.4lf,%.4lf,%.4lf,%.4lf,%d\n", n, m, initTime, totalTime, (double)initLambda/APP_VAL, (double)bestLambda/APP_VAL,iteration);
+  printf("o Final conductance* found is %lf\n", (double) bestLambda/APP_VAL);
+  printf("s Time to initialize was %lf\n", initTime);
+  printf("s Total time was %lf\n", totalTime);
+  if ( dumpSourceSetFile != NULL )
 	{
+    printf("c Dumping source set to file\n");
 		dumpSourceSet(dumpSourceSetFile);
 		fclose(dumpSourceSetFile);
-	}
+  }	
+  else
+  {
+    printf("c To dump source set into file, please use option --dumpSourceSet filename\n");
+  }
 
 }
 
