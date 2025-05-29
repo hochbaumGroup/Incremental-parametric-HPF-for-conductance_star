@@ -1550,7 +1550,7 @@ incrementalCut(void)
   // printf("C(S,S-) - lambda * d(S) = %lld\n", val);
 	int better = 1;
 
-  while ( better)
+  while ( denominator != 0 && better)
   {
     // compute new lambda
 		better = 0;
