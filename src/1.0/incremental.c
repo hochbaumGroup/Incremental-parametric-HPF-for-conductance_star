@@ -349,7 +349,7 @@ dumpSourceSet (FILE *out)
 
   for(i=1; i<numNodes-1; ++i)
   {
-    partition[i-1] = (adjacencyList[i].label != numNodes);
+    partition[i-1] = (bestSourceSet[i]);
   }
 
   for(i=0; i<origNumNodes; i++)
@@ -365,7 +365,7 @@ static void
 copySourceSet(void)
 {
   int i;
-  for( i=0; i<numNodes-2; i++ )
+  for( i=0; i<numNodes; i++ )
   {
     bestSourceSet[i] = inSourceSet[i];
   }
