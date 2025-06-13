@@ -1,4 +1,4 @@
-CFLAGS=-O4 -g -DFLOAT_FLOW -Wall -static 
+CFLAGS=-O0 -g -DFLOAT_FLOW -Wall
 BINDIR=bin
 SOURCES = src/1.0/incremental.c
 OBJECTS = $(SOURCES:.c=.o)
