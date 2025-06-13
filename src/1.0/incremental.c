@@ -349,7 +349,7 @@ dumpSourceSet (FILE *out)
 
   for(i=1; i<numNodes-1; ++i)
   {
-    partition[i-1] = (bestSourceSet[i]);
+    partition[invMapping[i] -1] = (bestSourceSet[i]);
   }
 
   for(i=0; i<origNumNodes; i++)
