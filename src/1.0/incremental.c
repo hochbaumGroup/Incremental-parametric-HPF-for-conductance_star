@@ -226,9 +226,10 @@ typedef struct edge
 } Edge;
 
 //---------------  Global variables ------------------
-static long long APP_VAL = 10000LL;
+static long long APP_VAL = 1000000LL;
 static long long n = 0;
 static long long m = 0;
+static int seedSet = 0;
 static int origNumNodes = 0;
 static int numNodes = 0;
 static int numArcs = 0;
@@ -319,7 +320,7 @@ computeNumeratorDenominator(long long *num, long long *den)
 
 	}
 
-	// printf("c COMP C(S, S_) / q(S) = %lld / %lld  =  %lf\n", *num, *den, (double)(*num)/(*den));
+	//printf("c COMP C(S, S_) / q(S) = %lld / %lld  =  %lf\n", *num, *den, (double)(*num)/(*den));
 	//*den/=2;
 
 
@@ -625,6 +626,7 @@ readPartitionFile (char *partition, FILE *partitionFile, int n)
   for ( i=1; i<=n; ++i )
   {
     fscanf( partitionFile, "%d", &active);
+    active = (active != seedSet);
     partition[i] = active;
     if (active) 
     {
@@ -680,6 +682,7 @@ parseAdjacencyListLine(char *line, size_t lineLength, int nodeIdx, int *eIdx, in
   *connectedToSink = 0;
   *interEdges = 0;
 
+  int totalWeightsOfNode = 0;
   if (nodeWeighted)
   {
     line = tryReadInt( line, &lineLength, &nodeWeight, &correct);
@@ -729,8 +732,10 @@ parseAdjacencyListLine(char *line, size_t lineLength, int nodeIdx, int *eIdx, in
     }
 
     edgeWeights[*eIdx] = edgeWeight;
+    totalWeightsOfNode += edgeWeight;
     (*eIdx)++;
   }
+
 }
 
 static void
@@ -812,7 +817,11 @@ constructParametricGraph (int *from, int *to, int *nodeWeights, int *edgeWeights
   source = 0;
   sink = partitionSize + 1;
 
-  for ( i=0; i<m; ++i)
+  int debugInternalArcs = 0;
+  int debugSinkArcs= 0;
+  int debugSourceArcs= 0;
+
+  for ( i=0; i<2*m; ++i)
   {
     fromArc = mapping[from[i]];
     toArc = mapping[to[i]];
@@ -828,6 +837,7 @@ constructParametricGraph (int *from, int *to, int *nodeWeights, int *edgeWeights
 
       ac->capacity = edgeWeight*APP_VAL;
 
+      debugInternalArcs++;
       //++ adjacents[ac->from];
       //++ adjacents[ac->to];
       adjacencyList[fromArc].numAdjacent++;
@@ -841,10 +851,13 @@ constructParametricGraph (int *from, int *to, int *nodeWeights, int *edgeWeights
 
   }
 
-  for ( i=1; i<n; ++i)
+  
+  int debugTotNodeWeight = 0;
+  for ( i=1; i<=n; ++i)
   {
     fromArc = mapping[i];
     nodeWeight = nodeWeights[i];
+    debugTotNodeWeight += partition[i] * nodeWeights[i];
     if(fromArc == source) continue;
     toArc = sink;
 
@@ -876,6 +889,7 @@ constructParametricGraph (int *from, int *to, int *nodeWeights, int *edgeWeights
     adjacencyList[toArc].numAdjacent++;
   }
 
+  //printf("c total node weight of partition = %d\n", debugTotNodeWeight);
 	long long numerator = 0;
 	long long denominator = 0;
 
@@ -888,7 +902,9 @@ constructParametricGraph (int *from, int *to, int *nodeWeights, int *edgeWeights
   	currLambda = (long long) (injectedLambda*APP_VAL);
 	}
    
-  printf("c Initial lambda = %lf\n", (double)currLambda/APP_VAL);
+  printf("c Initial cut: %lld\n", numerator/APP_VAL);
+  printf("c Initial weight = %lld\n", denominator);
+  printf("c Initial conductance* = %lf\n", (double)currLambda/APP_VAL);
 
   for(i=0; i<numArcs; ++i)
   {
@@ -1015,22 +1031,16 @@ readMetisFormatGraph (FILE *stream, FILE *partitionStream)
   partitionSize = readPartitionFile(partition, partitionStream, n);
   computeMappingsFromPartition(partition, partitionSize, n, &mapping, &invMapping);
 
-  if (edgeWeighted)
+  if ((edgeWeights = (int*) malloc ((2*m) * sizeof (int))) == NULL)
   {
-    if ((edgeWeights = (int*) malloc ((2*m) * sizeof (int))) == NULL)
-    {
-      printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
-      exit (1);
-    }
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
+    exit (1);
   }
 
-  if (nodeWeighted)
+  if ((nodeWeights = (int*) malloc ((n+1) * sizeof (int))) == NULL)
   {
-    if ((nodeWeights = (int*) malloc ((n+1) * sizeof (int))) == NULL)
-    {
-      printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
-      exit (1);
-    }
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
+    exit (1);
   }
 
   for (i=1; i<=n; ++i)
@@ -1046,6 +1056,7 @@ readMetisFormatGraph (FILE *stream, FILE *partitionStream)
     parseAdjacencyListLine(line, lineLength, i, &eIdx, &connectedToSink, &interEdges,
         edgeWeighted, nodeWeighted, edgeWeights, nodeWeights, from, to, partition);
 
+    totalInterEdges += interEdges;
     if (connectedToSink) numConnectedToSink++;
   }
   
@@ -2033,10 +2044,10 @@ pseudoflowPhase1 (void)
 
 	double thetime=timer();
 
-	computeNumeratorDenominator( &css, &ds);
-	printf("c B lambda;cut;deg;relabels\n");
+	//computeNumeratorDenominator( &css, &ds);
+	//printf("c B lambda;cut;deg;relabels\n");
 	//c B lambda;C(S,\bar{S});d(S) 
-	printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)currLambda/APP_VAL, css, ds, timer()-thetime, numRelabels );
+	//printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)currLambda/APP_VAL, css, ds, timer()-thetime, numRelabels );
 
 	thetime = timer ();
 //	while ((strongRoot = getHighestStrongRoot (currLambda)))  
@@ -2104,27 +2115,11 @@ pseudoflowPhase1 (void)
 #endif
 
 static void
-incrementalCut(void) 
+computeNextCut(long long theparam)
 {
+
+  printf("c Computing mincut for lambda = %lf\n", (double)theparam/APP_VAL);
   Node *strongRoot;
-
-  double thetime;
-  long long theparam = currLambda;
-  thetime = timer ();
-
-  //currLambda = overestimate(currLambda); //ceil( currLambda * APP_VAL ) / APP_VAL;
-  long long initLambda = currLambda;
-  long long bestLambda = currLambda;
-  long long numerator = 0;
-  long long denominator = 0;
-  copySourceSet();
-	// printf("c B lambda;cut;deg;time;relabels\n");
-	computeNumeratorDenominator( &numerator, &denominator);
-	// printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)currLambda/APP_VAL, numerator, denominator, timer()-thetime, numRelabels );
-  int iteration = 0;
-  printf("c Iteration %d\n", iteration++);
-  printf("c Computing mincut for lambda = %lf\n", (double)currLambda/APP_VAL);
-  //while ((strongRoot = getHighestStrongRoot (theparam)))  
 #ifdef LOWEST_LABEL
 	while ((strongRoot = getLowestStrongRoot (theparam)))  
 #else
@@ -2133,26 +2128,87 @@ incrementalCut(void)
   { 
     processRoot (strongRoot);
   }
+}
 
+static void
+incrementalCut(void) 
+{
+  Node *strongRoot;
+
+  double thetime;
+  long long theparam = currLambda;
+  thetime = timer ();
+
+  printf("c ----------------------------------------------------------------------------- \n");
+  //currLambda = overestimate(currLambda); //ceil( currLambda * APP_VAL ) / APP_VAL;
+  long long initLambda = currLambda;
+  long long bestLambda = currLambda;
+  long long numerator = 0;
+  long long denominator = 0;
+  copySourceSet();
+	// printf("c B lambda;cut;deg;time;relabels\n");
+	//computeNumeratorDenominator( &numerator, &denominator);
+	// printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)currLambda/APP_VAL, numerator, denominator, timer()-thetime, numRelabels );
+  int iteration = 1;
+
+  for (iteration = 1; ; ++iteration)
+  {
+    printf("c Iteration %d\n", iteration);
+    
+    computeNextCut(theparam);
+    
+    computeNumeratorDenominator(&numerator, &denominator);
+    
+    if ( denominator == 0 )
+    {
+      printf("c    Infeasible solution found. Stopping\n");
+      printf("c ----------------------------------------------------------------------------- \n");
+      break;
+    }
+
+    printf("c      Cut value: %lld\n", numerator/APP_VAL);
+    printf("c      Weight value: %lld\n", denominator);
+    printf("c      conductance* value: %lf\n", (double)numerator/denominator/APP_VAL );
+
+    copySourceSet();
+    currLambda = numerator/denominator;
+		theparam = currLambda;
+    printf("c      Updating capacities for lambda = %lf\n", (double)currLambda/APP_VAL);
+    updateCapacities(theparam);
+    printf("c ----------------------------------------------------------------------------- \n");
+  }
+
+
+  printf("o Final conductance* found is %lf\n", (double) bestLambda/APP_VAL);
+
+
+  //printf("c Computing mincut for lambda = %lf\n", (double)currLambda/APP_VAL);
+  //while ((strongRoot = getHighestStrongRoot (theparam)))  
+
+  //computeNextCut(theparam);
 
 	// long long mincut = computeMinCut();
 	// printf("c Initial mincut is = %lld\n", mincut);
 
-	computeNumeratorDenominator( &numerator, &denominator);
+	//computeNumeratorDenominator( &numerator, &denominator);
 	//printf("c B %lf;%lld;%lld\n", (double)currLambda/APP_VAL, numerator, denominator );
   //currLambda = css / qs;
 
   // printf("c C(S,S-)/d(S) = %lld/%lld = %lld\n", numerator, denominator, ceil_div(numerator, denominator));
-  long long val = numerator - currLambda * denominator;
+  //long long val = numerator - currLambda * denominator;
 
   // printf("C(S,S-) - lambda * d(S) = %lld\n", val);
-	int better = 1;
+	//int better = 1;
 
+  /*
   while ( denominator != 0 && better)
   {
     // compute new lambda
 		better = 0;
-    printf("c Iteration %d\n", iteration++);
+    //printf("c Iteration %d\n", iteration++);
+    printf("c      Cut value: %lld\n", numerator/APP_VAL);
+    printf("c      Weight value: %lld\n", denominator);
+    printf("c      conductance* value: %lf\n", (double)numerator/denominator/APP_VAL );
     currLambda = numerator / denominator ;//ceil_div(numerator, denominator);
     if (denominator == 0 ) break;
 		theparam = currLambda;
@@ -2163,8 +2219,8 @@ incrementalCut(void)
       copySourceSet();
     }
 
-    printf("c Updating capacities for lambda = %lf\n", (double)currLambda/APP_VAL);
-    updateCapacities(theparam);
+    printf("c updating capacities for lambda = %lf\n", (double)currlambda/app_val);
+    updatecapacities(theparam);
 
 #ifdef LOWEST_LABEL
 	while ((strongRoot = getLowestStrongRoot (theparam)))  
@@ -2201,10 +2257,11 @@ incrementalCut(void)
   }
   double totalTime = timer()-thetime;
 
+  */
   //printf("c %d,%d,%.4lf,%.4lf,%.4lf,%.4lf,%d\n", n, m, initTime, totalTime, (double)initLambda/APP_VAL, (double)bestLambda/APP_VAL,iteration);
-  printf("o Final conductance* found is %lf\n", (double) bestLambda/APP_VAL);
-  printf("s Time to initialize was %lf\n", initTime);
-  printf("s Total time was %lf\n", totalTime);
+  //printf("o Final conductance* found is %lf\n", (double) bestLambda/APP_VAL);
+  //printf("s Time to initialize was %lf\n", initTime);
+  //printf("s Total time was %lf\n", totalTime);
   if ( dumpSourceSetFile != NULL )
 	{
     printf("c Dumping source set to file\n");
@@ -2621,10 +2678,12 @@ void printHelp(int argc, char *argv[])
   printf("                         graphs that are big or have big weights\n");
   printf("                         by default, 4 decimal places           \n");
   printf("  --injectLambda L       start incremental procedure with L     \n");
-  printf("  --weightedEdges        enable if input has weights on edges   \n");
-  printf("  --weightedNodes        enable if input has weights on nodes   \n");
+  //printf("  --weightedEdges        enable if input has weights on edges   \n");
+  //printf("  --weightedNodes        enable if input has weights on nodes   \n");
   printf("  --dumpSourceSet FILE   dump list of nodes in optimal solution \n");
   printf("                         to FILE                                \n");
+  printf("  --seedSet ID           output solution is a subset of the     \n");
+  printf("                         nodes with partition distinct to ID    \n");
 
   printf("\n\nNote that this program read from stdin\n");
   printf("An example command is \'%s < mygraph.txt\' to read from file\n", argv[0]);
@@ -2648,7 +2707,7 @@ void printHelp(int argc, char *argv[])
 void parseParameters(int argc, char *argv[])
 {
   int i = 0;
-  for( i=4; i<argc; i++)
+  for( i=3; i<argc; i++)
   {
     if(strcmp(argv[i], "--help")==0)
     {
@@ -2681,6 +2740,10 @@ void parseParameters(int argc, char *argv[])
     else if (strcmp(argv[i], "--dumpSourceSet") == 0)
 		{
 			dumpSourceSetFile = fopen( argv[++i], "w");
+		}
+    else if (strcmp(argv[i], "--seedSet") == 0)
+		{
+      seedSet = atoi(argv[++i]);
 		}
     else
     {
@@ -2738,8 +2801,13 @@ main(int argc, char ** argv)
 	pseudoflowPhase1();
   displayBreakpoints ();
 #else
-  initTime = timer()-thetime;
+  //initTime = timer()-thetime;
+  thetime = timer();
   incrementalCut();
+  double incrementalCutTime = timer() - thetime;
+  printf("c Input read time : %lf\n", readTime);
+  printf("c Parametric Graph initialization time : %lf\n", initTime);
+  printf("c Incremental cut time : %lf\n", incrementalCutTime);
 #endif
 
 #ifdef PROGRESS
