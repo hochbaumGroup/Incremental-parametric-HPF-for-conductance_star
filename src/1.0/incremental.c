@@ -2150,6 +2150,7 @@ incrementalCut(void)
 	//computeNumeratorDenominator( &numerator, &denominator);
 	// printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)currLambda/APP_VAL, numerator, denominator, timer()-thetime, numRelabels );
   int iteration = 1;
+  long long val = 0;
 
   for (iteration = 1; ; ++iteration)
   {
@@ -2166,11 +2167,21 @@ incrementalCut(void)
       break;
     }
 
+    val = numerator - currLambda * denominator;
+    if ( val == 0 )
+    {
+      printf("c      Optimal solution Found\n");
+    }
     printf("c      Cut value: %lld\n", numerator/APP_VAL);
     printf("c      Weight value: %lld\n", denominator);
     printf("c      conductance* value: %lf\n", (double)numerator/denominator/APP_VAL );
 
     copySourceSet();
+    if (val == 0)
+    {
+      printf("c ----------------------------------------------------------------------------- \n");
+      break;
+    }
     currLambda = numerator/denominator;
 		theparam = currLambda;
     printf("c      Updating capacities for lambda = %lf\n", (double)currLambda/APP_VAL);
