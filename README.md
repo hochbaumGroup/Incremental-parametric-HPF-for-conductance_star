@@ -18,29 +18,64 @@ make
 
 # Usage
 
-The executable reads the input file from stdin. To execute one of the examples, use:
-```
-./bin/incremental < examples/example.txt
-```
-
-# Input format
-
-The input graph, with ``n`` nodes and ``m`` edges, and the  is to be provided in the following text format:
+The executable is run with the following syntax:
 
 ```
-n m R_SIZE ORIG_EDGES_IN_R R_CONNECTED_TO_COMP
-1ST_NODE_IN_R
-2ND_NODE_IN_R
+./bin/incremental graphfile partition_file [OPTIONS]
+```
+
+- `graphfile`: path to the input graph in METIS format
+- `partition_file`: path to the initial partition file
+- `OPTIONS`: optional flags and arguments that customize the execution
+
+You can use the `--help` flag to display the list of available options:
+
+```
+./bin/incremental --help
+```
+
+This command prints a summary of available options and usage instructions.
+
+
+
+# Input Format
+
+The input to this software consists of a graph in **METIS format** and an accompanying initial partition file. The graph has `n` nodes and `m` edges, and is stored as an adjacency list. Each undirected edge appears **twice** in the input—once for each endpoint. The file may include optional **node weights** and **edge weights**, depending on the format specification:
+
+```
+n m FORMAT
+[WEIGHT_NODE_1] NEIGHBOR_1_NODE_1 [WEIGHT_EDGE_1_NODE_1] NEIGHBOR_2_NODE_1 [WEIGHT_EDGE_2_NODE_1] ...
+[WEIGHT_NODE_2] NEIGHBOR_1_NODE_2 [WEIGHT_EDGE_1_NODE_2] NEIGHBOR_2_NODE_2 [WEIGHT_EDGE_2_NODE_2] ...
 ...
-KTH_NODE_IN_R
-FROM_EDGE_1 TO_EDGE_1
-FROM_EDGE_2 TO_EDGE_2
-...
-FROM_EDGE_M TO_EDGE_M
+[WEIGHT_NODE_n] NEIGHBOR_1_NODE_n ...
 ```
 
-Where `R_SIZE=K` is the size of the initial subset, `ORIG_EDGES_IN_R` is the number of edges with both its origin and endpoint in `R`, and `R_CONNECTED_TO_COMP` is the number of nodes in `R` that have an edge going to the complement of `R`.
+- `n`: number of nodes
+- `m`: number of undirected edges (each appears twice)
+- `FORMAT`: an integer specifying the presence of weights:
+  - `0`: no weights
+  - `1`: edge weights only
+  - `10`: node weights only
+  - `11`: both node and edge weights
 
-See directory [examples](examples) for sample input files.
+Each line after the header corresponds to a node’s adjacency list.  \
+If node weights are included, the line starts with a weight value.  \
+If edge weights are included, each neighbor is followed by the corresponding edge weight.
+
+### Partition File Format
+
+The partition file specifies an initial partition of the graph’s nodes. It follows the format used by METIS output: a plain text file with one line per node. Each line contains either a `0` or a `1`, indicating the partition assignment of the corresponding node:
+
+```
+0
+1
+0
+...
+```
+
+The node on line `i` belongs to partition `0` or `1`, depending on the value written on that line.
+
+
+
 
 
