@@ -242,6 +242,7 @@ static uint lowestStrongLabel = 1;
 static uint highestStrongLabel = 1;
 static int weightedNodes = 0;
 static int sourceSetSize = 1;
+static long long initialVolumeComplement = 0;
 
 double readTime = 0.0f;
 double initTime = 0.0f;
@@ -898,7 +899,11 @@ constructParametricGraph (int *from, int *to, int *nodeWeights, int *edgeWeights
     fromArc = mapping[i];
     nodeWeight = nodeWeights[i];
     debugTotNodeWeight += partition[i] * nodeWeights[i];
-    if(fromArc == source) continue;
+    if(fromArc == source)
+    {
+      initialVolumeComplement += nodeWeight;
+      continue;
+    }
     toArc = sink;
 
     // arc from node to source (sink here) with capacity lambda * q_i
@@ -2238,6 +2243,7 @@ incrementalCut(void)
 
   computeValuesLastPartition(&volS, &cutValue, &volSComp);
 
+  volSComp += initialVolumeComplement;
   double finalValue = ( (double)cutValue / fmin(volS, volSComp)) / APP_VAL ;
 
   printf("c \\frac{C(S,\\bar{S})}{ min(q(S), q(\\bar{S}) ) } = \\frac{%lld}{ min(%lld, %lld ) } = %lf\n",
