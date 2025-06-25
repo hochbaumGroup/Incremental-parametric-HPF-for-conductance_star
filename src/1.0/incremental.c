@@ -288,6 +288,46 @@ static int numGaps = 0;
 static llint numArcScans = 0;
 #endif
 
+static long long
+computeValuesLastPartition(long long *volS, long long *cut, long long *volSComp)
+{
+	int i = 0;
+
+	*volS= 0;
+	*cut = 0;
+	*volSComp = 0;
+
+	for (i=0; i<numArcs; ++i)
+	{
+		int from = arcList[i].from;
+		int to = arcList[i].to;
+
+		if (from == source && bestSourceSet[to])
+		{
+			*cut += arcList[i].intercept;
+			//printf("c add edge[s,%d] to cut with w=%lld\n", origR[to], arcList[i].intercept);
+		}
+		else if (to==sink && bestSourceSet[from])
+		{
+			*volS+= arcList[i].slope;
+		}
+		else if (to==sink && !bestSourceSet[from])
+		{
+			*volSComp+= arcList[i].slope;
+		}
+		else if (from != source && to != sink && bestSourceSet[from] && !bestSourceSet[to])
+		{
+			
+			*cut += arcList[i].intercept;
+		}
+
+	}
+
+	//printf("c COMP C(S, S_) / q(S) = %lld / %lld  =  %lf\n", *num, *den, (double)(*num)/(*den));
+	//*den/=2;
+
+
+}
 
 static void
 computeNumeratorDenominator(long long *num, long long *den)
@@ -2192,6 +2232,16 @@ incrementalCut(void)
 
 
   printf("o Final conductance* found is %lf\n", (double) bestLambda/APP_VAL);
+  long long volS = 0;
+  long long volSComp = 0;
+  long long cutValue = 0;
+
+  computeValuesLastPartition(&volS, &cutValue, &volSComp);
+
+  double finalValue = ( (double)cutValue / fmin(volS, volSComp)) / APP_VAL ;
+
+  printf("c \\frac{C(S,\\bar{S})}{ min(q(S), q(\\bar{S}) ) } = \\frac{%lld}{ min(%lld, %lld ) } = %lf\n",
+      cutValue/APP_VAL, volS, volSComp, finalValue );
 
 
   //printf("c Computing mincut for lambda = %lf\n", (double)currLambda/APP_VAL);
