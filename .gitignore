@@ -1,6 +1,6 @@
 # Prerequisites
 *.d
-
+.gdb_history
 # Object files
 *.o
 *.ko
@@ -41,7 +41,7 @@
 *.su
 *.idb
 *.pdb
-
+vgcore.*
 # Kernel Module Compile Results
 *.mod*
 *.cmd
@@ -50,3 +50,5 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+bin/*
