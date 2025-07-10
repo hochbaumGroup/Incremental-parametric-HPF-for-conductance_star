@@ -226,68 +226,139 @@ typedef struct edge
 } Edge;
 
 //---------------  Global variables ------------------
-static long long APP_VAL = 1000000LL;
-static long long n = 0;
-static long long m = 0;
-static int seedSet = 0;
-static int origNumNodes = 0;
-static int numNodes = 0;
-static int numArcs = 0;
-static int source = 0;
-static int sink = 0;
-static int numParams = 0;
-static int lastInternalArc = 0;
-static int weightedEdges = 0;
-static uint lowestStrongLabel = 1;
-static uint highestStrongLabel = 1;
-static int weightedNodes = 0;
-static int sourceSetSize = 1;
-static long long initialVolumeComplement = 0;
+typedef struct CutProblem_
+{
+  long long APP_VAL;
+  long long n;
+  long long m;
+  int seedSet;
+  int origNumNodes;
+  int numNodes;
+  int numArcs;
+  int source;
+  int sink;
+  int numParams;
+  int lastInternalArc;
+  int weightedEdges;
+  uint lowestStrongLabel;
+  uint highestStrongLabel;
+  int weightedNodes;
+  int sourceSetSize;
+  long long initialVolumeComplement;
 
-double readTime = 0.0f;
-double initTime = 0.0f;
-double solveTime = 0.0f;
- 
-static double injectedLambda = 1e9;
-static char isLambdaInjected = 0;
- 
-long long currLambda = 0;
+  double readTime;
+  double initTime;
+  double solveTime;
+   
+  double injectedLambda;
+  char isLambdaInjected;
+   
+  long long currLambda;
 
 
-static Node *adjacencyList = NULL;
-static Root *strongRoots = NULL;
-static int *labelCount = NULL;
-static Arc *arcList = NULL;
-static Edge *edges = NULL;
+  Node *adjacencyList;
+  Root *strongRoots;
+  int *labelCount;
+  Arc *arcList;
+  Edge *edges;
 
-static int *orEdges = NULL;
-static int *invMapping = NULL;
-static char *inOrigS = NULL;
-static int *origDeg= NULL;
+  int *orEdges;
+  int *invMapping;
+  char *inOrigS;
+  int *origDeg;
 
-static double TOL = 1e-5;
-static double totDegreeSourceSet = 0.0;
-static double totWeightSourceSet = 0.0;
+  double TOL;
+  double totDegreeSourceSet;
+  double totWeightSourceSet;
 
-static int *degrees = NULL;
-static int *adjacents = NULL;
-static int *value= NULL;
-static int *weights = NULL;
-static char *inSourceSet = NULL;
-static char *bestSourceSet = NULL;
-static int *edgeEnd = NULL;
-static int *firstEdge = NULL;
+  int *degrees;
+  int *adjacents;
+  int *value;
+  int *weights;
+  char *inSourceSet;
+  char *bestSourceSet;
+  int *edgeEnd;
+  int *firstEdge;
 
-static FILE *dumpSourceSetFile = NULL;
-//-----------------------------------------------------
+  FILE *dumpSourceSetFile;
+  //-----------------------------------------------------
 
-static long long numRelabels = 0;
+  long long numRelabels;
 #ifdef STATS
-static llint numPushes = 0;
-static int numMergers = 0;
-static int numGaps = 0;
-static llint numArcScans = 0;
+  llint numPushes;
+  int numMergers;
+  int numGaps;
+  llint numArcScans;
 #endif
+} CutProblem;
+
+void
+defaultInitializeProblem (CutProblem *p)
+{
+  p->APP_VAL = 1000000LL;
+  p->n = 0;
+  p->m = 0;
+  p->seedSet = 0;
+  p->origNumNodes = 0;
+  p->numNodes = 0;
+  p->numArcs = 0;
+  p->source = 0;
+  p->sink = 0;
+  p->numParams = 0;
+  p->lastInternalArc = 0;
+  p->weightedEdges = 0;
+  p->lowestStrongLabel = 1;
+  p->highestStrongLabel = 1;
+  p->weightedNodes = 0;
+  p->sourceSetSize = 1;
+  p->initialVolumeComplement = 0;
+
+  p->readTime = 0.0f;
+  p->initTime = 0.0f;
+  p->solveTime = 0.0f;
+   
+  p->injectedLambda = 1e9;
+  p->isLambdaInjected = 0;
+   
+  p->currLambda = 0;
+
+
+  p->adjacencyList = NULL;
+  p->strongRoots = NULL;
+  p->labelCount = NULL;
+  p->arcList = NULL;
+  p->edges = NULL;
+
+  p->orEdges = NULL;
+  p->invMapping = NULL;
+  p->inOrigS = NULL;
+  p->origDeg = NULL;
+
+  p->TOL = 1e-5;
+  p->totDegreeSourceSet = 0.0;
+  p->totWeightSourceSet = 0.0;
+
+  p->degrees = NULL;
+  p->adjacents = NULL;
+  p->value = NULL;
+  p->weights = NULL;
+  p->inSourceSet = NULL;
+  p->bestSourceSet = NULL;
+  p->edgeEnd = NULL;
+  p->firstEdge = NULL;
+
+  p->dumpSourceSetFile = NULL;
+  //-----------------------------------------------------
+
+  p->numRelabels = 0;
+#ifdef STATS
+  p->numPushes = 0;
+  p->numMergers = 0;
+  p->numGaps = 0;
+  p->numArcScans = 0;
+#endif
+
+}
 
 static long long
 computeValuesLastPartition(long long *volS, long long *cut, long long *volSComp)
