@@ -14,14 +14,14 @@ typedef enum
 } readReturn;
 
 
-size_t getLine(char **linePtr, size_t *(p->n), FILE *stream)
+size_t getLine(char **linePtr, size_t *n, FILE *stream)
 {
-    if (!linePtr || !(p->n) || !stream)
+    if (!linePtr || !n || !stream)
         return (size_t)-1;
 
-    if (*linePtr == NULL || *(p->n) == 0) {
-        *(p->n) = 128;
-        *linePtr = malloc(*(p->n));
+    if (*linePtr == NULL || n == 0) {
+        *n = 128;
+        *linePtr = malloc(*n);
         if (!*linePtr) return (size_t)-1;
     }
 
@@ -32,7 +32,7 @@ size_t getLine(char **linePtr, size_t *(p->n), FILE *stream)
 
     while (1)
     {
-        if (fgets(*linePtr + len, *(p->n) - len, stream) == NULL)
+        if (fgets(*linePtr + len, *(n) - len, stream) == NULL)
         {
             if (len == 0) return (size_t)-1; // Nothing read
             break; // Partial line read before EOF
@@ -41,16 +41,16 @@ size_t getLine(char **linePtr, size_t *(p->n), FILE *stream)
         len += strlen(*linePtr + len);
 
         // If newline was read, we're done
-        if (len > 0 && (*linePtr)[len - 1] == '\(p->n)')
+        if (len > 0 && (*linePtr)[len - 1] == '\n')
             break;
 
         // Otherwise, line is too long — need to grow buffer
-        newSize = *(p->n) * 2;
+        newSize = *(n) * 2;
         tmp = realloc(*linePtr, newSize);
         if (!tmp) return (size_t)-1;
 
         *linePtr = tmp;
-        *(p->n) = newSize;
+        *(n) = newSize;
     }
 
     return len;
@@ -108,12 +108,12 @@ getNextWord (char *line, char *word)
 {
   int wordlength = 0;
 
-  while (((*line) == ' ') || ((*line) == '\t') || ((*line) == '\(p->n)') || ((*line) == '\0'))
+  while (((*line) == ' ') || ((*line) == '\t') || ((*line) == '\n') || ((*line) == '\0'))
   {
     ++ line;
   }
 
-  while (((*line) != ' ') && ((*line) != '\t') && ((*line) != '\(p->n)') && ((*line) != '\0'))
+  while (((*line) != ' ') && ((*line) != '\t') && ((*line) != '\n') && ((*line) != '\0'))
   {
     word[wordlength] = (*line);
     ++ wordlength;
@@ -228,134 +228,134 @@ typedef struct edge
 //---------------  Global variables ------------------
 typedef struct CutProblem_
 {
-  long long (p->APP_VAL);
-  long long (p->n);
-  long long (p->m);
-  int (p->seedSet);
-  int (p->origNumNodes);
-  int (p->numNodes);
-  int (p->numArcs);
-  int (p->source);
-  int (p->sink);
-  int (p->numParams);
-  int (p->lastInternalArc);
-  int (p->weightedEdges);
-  uint (p->lowestStrongLabel);
-  uint (p->highestStrongLabel);
-  int (p->weightedNodes);
-  int (p->sourceSetSize);
-  long long (p->initialVolumeComplement);
+  long long APP_VAL;
+  long long n;
+  long long m;
+  int seedSet;
+  int origNumNodes;
+  int numNodes;
+  int numArcs;
+  int source;
+  int sink;
+  int numParams;
+  int lastInternalArc;
+  int weightedEdges;
+  uint lowestStrongLabel;
+  uint highestStrongLabel;
+  int weightedNodes;
+  int sourceSetSize;
+  long long initialVolumeComplement;
 
-  double (p->readTime);
-  double (p->initTime);
-  double (p->solveTime);
+  double readTime;
+  double initTime;
+  double solveTime;
    
-  double (p->injectedLambda);
-  char (p->isLambdaInjected);
+  double injectedLambda;
+  char isLambdaInjected;
    
-  long long (p->currLambda);
+  long long currLambda;
 
 
-  Node *(p->adjacencyList);
+  Node *adjacencyList;
   Root *strongRoots;
-  int *(p->labelCount);
-  Arc *(p->arcList);
+  int *labelCount;
+  Arc *arcList;
   Edge *edges;
 
   int *orEdges;
-  int *(p->invMapping);
+  int *invMapping;
   char *inOrigS;
   int *origDeg;
 
-  double (p->TOL);
-  double (p->totDegreeSourceSet);
-  double (p->totWeightSourceSet);
+  double TOL;
+  double totDegreeSourceSet;
+  double totWeightSourceSet;
 
   int *degrees;
   int *adjacents;
   int *value;
   int *weights;
-  char *(p->inSourceSet);
-  char *(p->bestSourceSet);
+  char *inSourceSet;
+  char *bestSourceSet;
   int *edgeEnd;
   int *firstEdge;
 
   FILE *dumpSourceSetFile;
   //-----------------------------------------------------
 
-  long long (p->numRelabels);
+  long long numRelabels;
 #ifdef STATS
-  llint (p->numPushes);
-  int (p->numMergers);
-  int (p->numGaps);
-  llint (p->numArcScans);
+  llint numPushes;
+  int numMergers;
+  int numGaps;
+  llint numArcScans;
 #endif
 } CutProblem;
 
 void
 defaultInitializeProblem (CutProblem *p)
 {
-  p->(p->APP_VAL) = 1000000LL;
-  p->(p->n) = 0;
-  p->(p->m) = 0;
-  p->(p->seedSet) = 0;
-  p->(p->origNumNodes) = 0;
-  p->(p->numNodes) = 0;
-  p->(p->numArcs) = 0;
-  p->(p->source) = 0;
-  p->(p->sink) = 0;
-  p->(p->numParams) = 0;
-  p->(p->lastInternalArc) = 0;
-  p->(p->weightedEdges) = 0;
-  p->(p->lowestStrongLabel) = 1;
-  p->(p->highestStrongLabel) = 1;
-  p->(p->weightedNodes) = 0;
-  p->(p->sourceSetSize) = 1;
-  p->(p->initialVolumeComplement) = 0;
+  (p->APP_VAL) = 1000000LL;
+  (p->n) = 0;
+  (p->m) = 0;
+  (p->seedSet) = 0;
+  (p->origNumNodes) = 0;
+  (p->numNodes) = 0;
+  (p->numArcs) = 0;
+  (p->source) = 0;
+  (p->sink) = 0;
+  (p->numParams) = 0;
+  (p->lastInternalArc) = 0;
+  (p->weightedEdges) = 0;
+  (p->lowestStrongLabel) = 1;
+  (p->highestStrongLabel) = 1;
+  (p->weightedNodes) = 0;
+  (p->sourceSetSize) = 1;
+  (p->initialVolumeComplement) = 0;
 
-  p->(p->readTime) = 0.0f;
-  p->(p->initTime) = 0.0f;
-  p->(p->solveTime) = 0.0f;
+  (p->readTime) = 0.0f;
+  (p->initTime) = 0.0f;
+  (p->solveTime) = 0.0f;
    
-  p->(p->injectedLambda) = 1e9;
-  p->(p->isLambdaInjected) = 0;
+  (p->injectedLambda) = 1e9;
+  (p->isLambdaInjected) = 0;
    
-  p->(p->currLambda) = 0;
+  (p->currLambda) = 0;
 
 
-  p->(p->adjacencyList) = NULL;
+  (p->adjacencyList) = NULL;
   p->strongRoots = NULL;
-  p->(p->labelCount) = NULL;
-  p->(p->arcList) = NULL;
+  (p->labelCount) = NULL;
+  (p->arcList) = NULL;
   p->edges = NULL;
 
   p->orEdges = NULL;
-  p->(p->invMapping) = NULL;
+  (p->invMapping) = NULL;
   p->inOrigS = NULL;
   p->origDeg = NULL;
 
-  p->(p->TOL) = 1e-5;
-  p->(p->totDegreeSourceSet) = 0.0;
-  p->(p->totWeightSourceSet) = 0.0;
+  (p->TOL) = 1e-5;
+  (p->totDegreeSourceSet) = 0.0;
+  (p->totWeightSourceSet) = 0.0;
 
   p->degrees = NULL;
   p->adjacents = NULL;
   p->value = NULL;
   p->weights = NULL;
-  p->(p->inSourceSet) = NULL;
-  p->(p->bestSourceSet) = NULL;
+  (p->inSourceSet) = NULL;
+  (p->bestSourceSet) = NULL;
   p->edgeEnd = NULL;
   p->firstEdge = NULL;
 
   p->dumpSourceSetFile = NULL;
   //-----------------------------------------------------
 
-  p->(p->numRelabels) = 0;
+  (p->numRelabels) = 0;
 #ifdef STATS
-  p->(p->numPushes) = 0;
-  p->(p->numMergers) = 0;
-  p->(p->numGaps) = 0;
-  p->(p->numArcScans) = 0;
+  (p->numPushes) = 0;
+  (p->numMergers) = 0;
+  (p->numGaps) = 0;
+  (p->numArcScans) = 0;
 #endif
 
 }
@@ -377,7 +377,7 @@ computeValuesLastPartition(CutProblem *p, long long *volS, long long *cut, long 
 		if (from == (p->source) && (p->bestSourceSet)[to])
 		{
 			*cut += (p->arcList)[i].intercept;
-			//printf("c add edge[s,%d] to cut with w=%lld\(p->n)", origR[to], (p->arcList)[i].intercept);
+			//printf("c add edge[s,%d] to cut with w=%lld\n", origR[to], (p->arcList)[i].intercept);
 		}
 		else if (to==(p->sink) && (p->bestSourceSet)[from])
 		{
@@ -395,7 +395,7 @@ computeValuesLastPartition(CutProblem *p, long long *volS, long long *cut, long 
 
 	}
 
-	//printf("c COMP C(S, S_) / q(S) = %lld / %lld  =  %lf\(p->n)", *num, *den, (double)(*num)/(*den));
+	//printf("c COMP C(S, S_) / q(S) = %lld / %lld  =  %lf\n", *num, *den, (double)(*num)/(*den));
 	//*den/=2;
 
 
@@ -418,7 +418,7 @@ computeNumeratorDenominator(CutProblem *p, long long *num, long long *den)
 		if (from == (p->source) && (p->inSourceSet)[to])
 		{
 			*num += (p->arcList)[i].intercept;
-			//printf("c add edge[s,%d] to cut with w=%lld\(p->n)", origR[to], (p->arcList)[i].intercept);
+			//printf("c add edge[s,%d] to cut with w=%lld\n", origR[to], (p->arcList)[i].intercept);
 		}
 		else if (to==(p->sink) && (p->inSourceSet)[from])
 		{
@@ -432,7 +432,7 @@ computeNumeratorDenominator(CutProblem *p, long long *num, long long *den)
 
 	}
 
-	//printf("c COMP C(S, S_) / q(S) = %lld / %lld  =  %lf\(p->n)", *num, *den, (double)(*num)/(*den));
+	//printf("c COMP C(S, S_) / q(S) = %lld / %lld  =  %lf\n", *num, *den, (double)(*num)/(*den));
 	//*den/=2;
 
 
@@ -443,38 +443,38 @@ static void
 dumpSourceSet (CutProblem *p, FILE *out)
 {
   
-  char *(p->partition) = NULL;
-  if (((p->partition)= (char*) malloc ((p->origNumNodes)* sizeof (char))) == NULL)
+  char *partition = NULL;
+  if ((partition= (char*) malloc ((p->origNumNodes)* sizeof (char))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   
   int i;
-  int (p->sourceSetSize) = 0;
+  int sourceSetSize = 0;
 
   for(i=0; i<(p->origNumNodes); ++i)
   {
-    (p->partition)[i] = 0;
+    (partition)[i] = 0;
   }
 
   for(i=1; i<(p->numNodes)-1; ++i)
   {
-    (p->partition)[(p->invMapping)[i] -1] = ((p->bestSourceSet)[i]);
+    (partition)[(p->invMapping)[i] -1] = ((p->bestSourceSet)[i]);
   }
 
   for(i=0; i<(p->origNumNodes); i++)
   {
-    fprintf(out, "%d\(p->n)", (int) (p->partition)[i]);
-    (p->sourceSetSize) += (p->partition)[i];
+    fprintf(out, "%d\n", (int) (partition)[i]);
+    (p->sourceSetSize) += (partition)[i];
   }
-	printf("c best (p->source) set size = %d\(p->n)", (p->sourceSetSize));
+	printf("c best (p->source) set size = %d\n", (p->sourceSetSize));
 
 }
 
 static void
-copySourceSet(CutProblem *p, void)
+copySourceSet(CutProblem *p)
 {
   int i;
   for( i=0; i<(p->numNodes); i++ )
@@ -484,7 +484,7 @@ copySourceSet(CutProblem *p, void)
 }
 
 static long long 
-computeArcCapacity(const Arc *ac, long long param)
+computeArcCapacity(CutProblem *p, const Arc *ac, long long param)
 {
   if( ac->to == (p->sink) )
   {
@@ -499,7 +499,7 @@ computeArcCapacity(const Arc *ac, long long param)
 }
 
 static void
-initializeNode (Node *nd, const int (p->n))
+initializeNode (CutProblem *p, Node *nd, const int n)
 {
   nd->label = 0;
   nd->excess = 0;
@@ -518,19 +518,19 @@ initializeNode (Node *nd, const int (p->n))
 }
 
 static void
-initializeRoot (Root *rt) 
+initializeRoot (CutProblem *p, Root *rt) 
 {
   rt->start = (Node *) malloc (sizeof(Node));
   rt->end = (Node *) malloc (sizeof(Node));
 
   if ((rt->start == NULL) || (rt->end == NULL))
   {
-    printf ("%s Line %d: Out of memory\(p->n)", __FILE__, __LINE__);
+    printf ("%s Line %d: Out of memory\n", __FILE__, __LINE__);
     exit (1);
   }
 
-  initializeNode (rt->start, 0);
-  initializeNode (rt->end, 0);
+  initializeNode (p, rt->start, 0);
+  initializeNode (p, rt->end, 0);
 
   rt->start->next = rt->end;
   rt->end->prev = rt->start;
@@ -550,20 +550,20 @@ freeRoot (Root *rt)
 static void
 liftAll (CutProblem *p, Node *rootNode, const long long theparam) 
 {
-	//printf("c liftAll %d\(p->n)", rootNode - (p->adjacencyList));
+	//printf("c liftAll %d\n", rootNode - (p->adjacencyList));
   Node *temp, *current=rootNode;
 
   current->nextScan = current->childList;
 
   -- (p->labelCount)[current->label];
   current->label = (p->numNodes);  
-	//printf("c new label of %d is %d\(p->n)", current - (p->adjacencyList), current->label);
+	//printf("c new label of %d is %d\n", current - (p->adjacencyList), current->label);
   current->breakpoint = (theparam+1);
 
 
   (p->inSourceSet)[(int)(current-(p->adjacencyList)) ] = 0;
 	(p->sourceSetSize)++;
-	//printf("remove %d from (p->source) set\(p->n)", (int)(current-(p->adjacencyList)) - 1);
+	//printf("remove %d from (p->source) set\n", (int)(current-(p->adjacencyList)) - 1);
 
   for ( ; (current); current = current->parent)
   {
@@ -576,10 +576,10 @@ liftAll (CutProblem *p, Node *rootNode, const long long theparam)
 
       (p->inSourceSet)[(int)(current-(p->adjacencyList)) ] = 0;
 	    (p->sourceSetSize)++;
-			//printf("remove %d from (p->source) set\(p->n)", (int)(current-(p->adjacencyList)) - 1);
+			//printf("remove %d from (p->source) set\n", (int)(current-(p->adjacencyList)) - 1);
       -- (p->labelCount)[current->label];
       current->label = (p->numNodes);
-			//printf("c new label of %d is %d\(p->n)", current - (p->adjacencyList), current->label);
+			//printf("c new label of %d is %d\n", current - (p->adjacencyList), current->label);
       current->breakpoint = (theparam+1); 
     }
   }
@@ -601,7 +601,7 @@ createOutOfTree (Node *nd)
   {
     if ((nd->outOfTree = (Arc **) malloc (nd->numAdjacent * sizeof (Arc *))) == NULL)
     {
-      printf ("%s Line %d: Out of memory\(p->n)", __FILE__, __LINE__);
+      printf ("%s Line %d: Out of memory\n", __FILE__, __LINE__);
       exit (1);
     }
   }
@@ -623,23 +623,14 @@ initializeArc (Arc *ac)
 }
 
 static void
-addOutOfTreeNode (CutProblem *p, Node *(p->n), Arc *out) 
+addOutOfTreeNode (CutProblem *p, Node *n, Arc *out) 
 {
-  (p->n)->outOfTree[(p->n)->numOutOfTree] = out;
-  ++ (p->n)->numOutOfTree;
+  n->outOfTree[n->numOutOfTree] = out;
+  ++ n->numOutOfTree;
 }
 
 
 
-int
-cmp_deg(const void *lhs,const void *rhs)
-{
-  int a = *((int*)lhs);
-  int b = *((int*)rhs);
-
-  return (firstEdge[b+1]-firstEdge[b]) - (firstEdge[a+1]-firstEdge[a]);
-
-}
 
 int cmp_edge(const void *lhs, const void *rhs)
 {
@@ -694,21 +685,21 @@ parseParameterLine(CutProblem *p,  char *line, size_t lineLength, int *n_, int *
 {
   int format = 0;
 
-  int (p->n) = 0;
-  int (p->m) = 0;
+  int n = 0;
+  int m = 0;
   int correct = 0;
   char *origLine = line;
-  line = tryReadInt( line, &lineLength, &(p->n), &correct); 
+  line = tryReadInt( line, &lineLength, &n, &correct); 
   
   if(!correct) 
   {
-    fprintf(stderr, "Malformed parameter line \'%s\'\(p->n)", origLine);
+    fprintf(stderr, "Malformed parameter line \'%s\'\n", origLine);
     exit(-1);
   }
-  line = tryReadInt( line, &lineLength, &(p->m), &correct); 
+  line = tryReadInt( line, &lineLength, &m, &correct); 
   if(!correct) 
   {
-    fprintf(stderr, "Malformed parameter line\(p->n)");
+    fprintf(stderr, "Malformed parameter line\n");
     exit(-1);
   }
   if( *line == ' ' )
@@ -720,26 +711,26 @@ parseParameterLine(CutProblem *p,  char *line, size_t lineLength, int *n_, int *
     }
   }
 
-  *n_ = (p->n);
-  *m_ = (p->m);
+  *n_ = n;
+  *m_ = m;
   *format_ = format;
 
   return 0;
 }
 
 static int 
-readPartitionFile (CutProblem *p, char *(p->partition), FILE *partitionFile, int (p->n))
+readPartitionFile (CutProblem *p, char *partition, FILE *partitionFile, int n)
 {
   int partitionSize = 0;
 
   int active = 0;
   int i = 0;
 
-  for ( i=1; i<=(p->n); ++i )
+  for ( i=1; i<=n; ++i )
   {
     fscanf( partitionFile, "%d", &active);
     active = (active != (p->seedSet));
-    (p->partition)[i] = active;
+    partition[i] = active;
     if (active) 
     {
       partitionSize++;
@@ -750,38 +741,38 @@ readPartitionFile (CutProblem *p, char *(p->partition), FILE *partitionFile, int
 }
 
 static void
-computeMappingsFromPartition(CutProblem *p, char *(p->partition), int partitionSize, int (p->n), int **(p->mapping), int **(p->invMapping))
+computeMappingsFromPartition(CutProblem *p, char *partition, int partitionSize, int n, int **mapping, int **invMapping)
 {
   int i = 0;
   int idx = 1;
-  if ((*(p->mapping) = (int*) malloc (((p->n)+1) * sizeof (int))) == NULL)
+  if ((*mapping = (int*) malloc ((n+1) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
-  if ((*(p->invMapping) = (int*) malloc ((partitionSize+1) * sizeof (int))) == NULL)
+  if ((*invMapping = (int*) malloc ((partitionSize+1) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
-  for (i=1; i<=(p->n); ++i)
+  for (i=1; i<=n; ++i)
   {
-    if ((p->partition)[i]){
-      (*(p->mapping))[i] = idx;
-      (*(p->invMapping))[idx] = i;
+    if (partition[i]){
+      (*mapping)[i] = idx;
+      (*invMapping)[idx] = i;
       idx++;
     }
     else{
       // Collapse node into (p->source) ((p->sink) in paper)
-      (*(p->mapping))[i] = 0;
+      (*mapping)[i] = 0;
     }
   }
 }
 
 static void
-parseAdjacencyListLine(CutProblem *p, char *line, size_t lineLength, int nodeIdx, int *eIdx, int *connectedToSink, int *interEdges,  int edgeWeighted, int nodeWeighted, int *(p->edgeWeights), int *(p->nodeWeights), int *from, int *to, char *(p->partition))
+parseAdjacencyListLine(CutProblem *p, char *line, size_t lineLength, int nodeIdx, int *eIdx, int *connectedToSink, int *interEdges,  int edgeWeighted, int nodeWeighted, int *edgeWeights, int *nodeWeights, int *from, int *to, char *partition)
 {
   int nodeWeight = 0;
   int edgeWeight = 0;
@@ -800,8 +791,8 @@ parseAdjacencyListLine(CutProblem *p, char *line, size_t lineLength, int nodeIdx
     line = tryReadInt( line, &lineLength, &nodeWeight, &correct);
     if(!correct) 
     {
-      fprintf(stderr, "Malformed adjacency list line \'%s\'\(p->n)", origLine);
-      fprintf(stderr, "Reason: no node weight provided\(p->n)");
+      fprintf(stderr, "Malformed adjacency list line \'%s\'\n", origLine);
+      fprintf(stderr, "Reason: no node weight provided\n");
       exit(-1);
     }
   }
@@ -810,7 +801,7 @@ parseAdjacencyListLine(CutProblem *p, char *line, size_t lineLength, int nodeIdx
     nodeWeight = 1;
   }
 
-  (p->nodeWeights)[nodeIdx] = nodeWeight;
+  nodeWeights[nodeIdx] = nodeWeight;
   while (lineLength > 1)
   {
     line = tryReadInt( line, &lineLength, &toEdge, &correct);
@@ -823,8 +814,8 @@ parseAdjacencyListLine(CutProblem *p, char *line, size_t lineLength, int nodeIdx
       line = tryReadInt( line, &lineLength, &edgeWeight, &correct);
       if(!correct) 
       {
-        fprintf(stderr, "Malformed adjacency list line \'%s\'\(p->n)", origLine);
-        fprintf(stderr, "Reason: missing edgeWeight\(p->n)");
+        fprintf(stderr, "Malformed adjacency list line \'%s\'\n", origLine);
+        fprintf(stderr, "Reason: missing edgeWeight\n");
         exit(-1);
       }
     }
@@ -833,17 +824,17 @@ parseAdjacencyListLine(CutProblem *p, char *line, size_t lineLength, int nodeIdx
       edgeWeight = 1;
     }
     
-    if ((p->partition)[fromEdge] && (p->partition)[toEdge])
+    if (partition[fromEdge] && partition[toEdge])
     {
       (*interEdges)++;
 
     }
-    else if ((p->partition)[fromEdge] && !(p->partition)[toEdge])
+    else if (partition[fromEdge] && !partition[toEdge])
     {
       (*connectedToSink) = 1;
     }
 
-    (p->edgeWeights)[*eIdx] = edgeWeight;
+    edgeWeights[*eIdx] = edgeWeight;
     totalWeightsOfNode += edgeWeight;
     (*eIdx)++;
   }
@@ -851,8 +842,8 @@ parseAdjacencyListLine(CutProblem *p, char *line, size_t lineLength, int nodeIdx
 }
 
 static void
-constructParametricGraph (CutProblem *p, int *from, int *to, int *(p->nodeWeights), int *(p->edgeWeights), char *(p->partition), int *(p->mapping), 
-    int (p->n), int (p->m), int totalInterEdges, int numConnectedToSink, int partitionSize)
+constructParametricGraph (CutProblem *p, int *from, int *to, int *nodeWeights, int *edgeWeights, char *partition, int *mapping, 
+    int n, int m, int totalInterEdges, int numConnectedToSink, int partitionSize)
 {
 
   int i = 0;
@@ -871,50 +862,50 @@ constructParametricGraph (CutProblem *p, int *from, int *to, int *(p->nodeWeight
 
   if (((p->adjacencyList) = (Node *) malloc ((p->numNodes) * sizeof (Node))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   if ((degToSink= (int*) malloc ((p->numNodes) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
-  if ((strongRoots = (Root *) malloc ((p->numNodes) * sizeof (Root))) == NULL)
+  if ((p->strongRoots = (Root *) malloc ((p->numNodes) * sizeof (Root))) == NULL)
   {
-    printf ("%s, %d: Could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: Could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   if (((p->labelCount) = (int *) malloc ((p->numNodes) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: Could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: Could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   if (((p->arcList) = (Arc *) malloc ((p->numArcs) * sizeof (Arc))) == NULL)
   {
-    printf ("%s, %d: Could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: Could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   if (((p->inSourceSet)= (char *) malloc ((p->numNodes) * sizeof (char))) == NULL)
   {
-    printf ("%s, %d: Could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: Could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   if (((p->bestSourceSet)= (char *) malloc ((p->numNodes) * sizeof (char))) == NULL)
   {
-    printf ("%s, %d: Could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: Could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   for (i=0; i<(p->numNodes); ++i)
   {
-    initializeRoot (&strongRoots[i]);
-    initializeNode (&(p->adjacencyList)[i], i);
+    initializeRoot (p, &p->strongRoots[i]);
+    initializeNode (p, &(p->adjacencyList)[i], i);
     (p->labelCount)[i] = 0;
     degToSink[i] = 0;
     (p->inSourceSet)[i] = 1;
@@ -933,11 +924,11 @@ constructParametricGraph (CutProblem *p, int *from, int *to, int *(p->nodeWeight
   int debugSinkArcs= 0;
   int debugSourceArcs= 0;
 
-  for ( i=0; i<2*(p->m); ++i)
+  for ( i=0; i<2*m; ++i)
   {
-    fromArc = (p->mapping)[from[i]];
-    toArc = (p->mapping)[to[i]];
-    edgeWeight = (p->edgeWeights)[i];
+    fromArc = (mapping)[from[i]];
+    toArc = (mapping)[to[i]];
+    edgeWeight = (edgeWeights)[i];
     
     if (fromArc != (p->source) && toArc != (p->source))
     {
@@ -967,9 +958,9 @@ constructParametricGraph (CutProblem *p, int *from, int *to, int *(p->nodeWeight
   int debugTotNodeWeight = 0;
   for ( i=1; i<=(p->n); ++i)
   {
-    fromArc = (p->mapping)[i];
-    nodeWeight = (p->nodeWeights)[i];
-    debugTotNodeWeight += (p->partition)[i] * (p->nodeWeights)[i];
+    fromArc = (mapping)[i];
+    nodeWeight = (nodeWeights)[i];
+    debugTotNodeWeight += (partition)[i] * (nodeWeights)[i];
     if(fromArc == (p->source))
     {
       (p->initialVolumeComplement) += nodeWeight;
@@ -1005,12 +996,12 @@ constructParametricGraph (CutProblem *p, int *from, int *to, int *(p->nodeWeight
     (p->adjacencyList)[toArc].numAdjacent++;
   }
 
-  //printf("c total node weight of (p->partition) = %d\(p->n)", debugTotNodeWeight);
+  //printf("c total node weight of (p->partition) = %d\n", debugTotNodeWeight);
 	long long numerator = 0;
 	long long denominator = 0;
 
-	computeNumeratorDenominator(&numerator, &denominator);
-	// printf("c C(S,S-)=%lld, d(S)=%lld\(p->n)", numerator, denominator);
+	computeNumeratorDenominator(p, &numerator, &denominator);
+	// printf("c C(S,S-)=%lld, d(S)=%lld\n", numerator, denominator);
 
 	(p->currLambda) = numerator/ denominator;
 	if ((p->isLambdaInjected))
@@ -1018,15 +1009,15 @@ constructParametricGraph (CutProblem *p, int *from, int *to, int *(p->nodeWeight
   	(p->currLambda) = (long long) ((p->injectedLambda)*(p->APP_VAL));
 	}
    
-  printf("c Initial cut: %lld\(p->n)", numerator/(p->APP_VAL));
-  printf("c Initial weight = %lld\(p->n)", denominator);
-  printf("c Initial conductance* = %lf\(p->n)", (double)(p->currLambda)/(p->APP_VAL));
+  printf("c Initial cut: %lld\n", numerator/(p->APP_VAL));
+  printf("c Initial weight = %lld\n", denominator);
+  printf("c Initial conductance* = %lf\n", (double)(p->currLambda)/(p->APP_VAL));
 
   for(i=0; i<(p->numArcs); ++i)
   {
       ac = &(p->arcList)[i];
-      ac->capacity = computeArcCapacity(ac, (p->currLambda));
-			//printf("c arc [%lld,%lld] intercept=%lld slope=%lld arc capacity = %lld\(p->n)",
+      ac->capacity = computeArcCapacity(p, ac, (p->currLambda));
+			//printf("c arc [%lld,%lld] intercept=%lld slope=%lld arc capacity = %lld\n",
 			//		ac->from, ac->to, ac->intercept, ac->slope, ac->capacity);
   }
       
@@ -1050,15 +1041,15 @@ constructParametricGraph (CutProblem *p, int *from, int *to, int *(p->nodeWeight
       }
       else if (from == (p->source))
       {
-        addOutOfTreeNode (&(p->adjacencyList)[from], &(p->arcList)[i]);
+        addOutOfTreeNode (p, &(p->adjacencyList)[from], &(p->arcList)[i]);
       }
       else if (to == (p->sink))
       {
-        addOutOfTreeNode (&(p->adjacencyList)[to], &(p->arcList)[i]);
+        addOutOfTreeNode (p, &(p->adjacencyList)[to], &(p->arcList)[i]);
       }
       else
       {
-        addOutOfTreeNode (&(p->adjacencyList)[from], &(p->arcList)[i]);
+        addOutOfTreeNode (p, &(p->adjacencyList)[from], &(p->arcList)[i]);
       }
     }
   }
@@ -1076,11 +1067,11 @@ readMetisFormatGraph (CutProblem *p, FILE *stream, FILE *partitionStream)
   double startTime = timer();
 
   char *line = NULL;
-  int *(p->mapping) = NULL;
+  int *mapping = NULL;
 
 
-  int *(p->edgeWeights) = NULL;
-  int *(p->nodeWeights) = NULL;
+  int *edgeWeights = NULL;
+  int *nodeWeights = NULL;
   int *from= NULL;
   int *to= NULL;
   
@@ -1089,8 +1080,8 @@ readMetisFormatGraph (CutProblem *p, FILE *stream, FILE *partitionStream)
 
 
   int i=0;
-  int (p->n) = 0;
-  int (p->m) = 0;
+  int n = 0;
+  int m = 0;
   int format = 0;
   int partitionSize = 0;
   int numConnectedToSink = 0;
@@ -1114,48 +1105,48 @@ readMetisFormatGraph (CutProblem *p, FILE *stream, FILE *partitionStream)
   }
 
   // Parse parameter line
-  parseParameterLine(line, lineLength, &(p->n), &(p->m), &format);
+  parseParameterLine(p, line, lineLength, &n, &m, &format);
 
 
-  if ((from = (int*) malloc ((2*(p->m)) * sizeof (int))) == NULL)
+  if ((from = (int*) malloc ((2*m) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
-  if ((to = (int*) malloc ((2*(p->m)) * sizeof (int))) == NULL)
+  if ((to = (int*) malloc ((2*m) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
   edgeWeighted = format%10;
   nodeWeighted = (format/10)%10;
 
-  char *(p->partition) = NULL;
+  char *partition = NULL;
   
-  if (((p->partition) = (char*) malloc (((p->n)+1) * sizeof (char))) == NULL)
+  if ((partition = (char*) malloc ((n+1) * sizeof (char))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
   
-  for (i=0; i<=(p->n); i++)
+  for (i=0; i<=n; i++)
   {
-    (p->partition)[i] = 0;
+    partition[i] = 0;
   }
 
-  partitionSize = readPartitionFile((p->partition), partitionStream, (p->n));
-  computeMappingsFromPartition((p->partition), partitionSize, (p->n), &(p->mapping), &(p->invMapping));
+  partitionSize = readPartitionFile(p, partition, partitionStream, n);
+  computeMappingsFromPartition(p, partition, partitionSize, n, &mapping, &(p->invMapping));
 
-  if (((p->edgeWeights) = (int*) malloc ((2*(p->m)) * sizeof (int))) == NULL)
+  if ((edgeWeights = (int*) malloc ((2*m) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
-  if (((p->nodeWeights) = (int*) malloc (((p->n)+1) * sizeof (int))) == NULL)
+  if ((nodeWeights = (int*) malloc ((n+1) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
@@ -1169,8 +1160,8 @@ readMetisFormatGraph (CutProblem *p, FILE *stream, FILE *partitionStream)
       lineLength = getLine(&line, &lineSize, stream);
     }
 
-    parseAdjacencyListLine(line, lineLength, i, &eIdx, &connectedToSink, &interEdges,
-        edgeWeighted, nodeWeighted, (p->edgeWeights), (p->nodeWeights), from, to, (p->partition));
+    parseAdjacencyListLine(p, line, lineLength, i, &eIdx, &connectedToSink, &interEdges,
+        edgeWeighted, nodeWeighted, edgeWeights, nodeWeights, from, to, partition);
 
     totalInterEdges += interEdges;
     if (connectedToSink) numConnectedToSink++;
@@ -1182,25 +1173,25 @@ readMetisFormatGraph (CutProblem *p, FILE *stream, FILE *partitionStream)
 
   // Start time measure of initialization of flow graph here
   startTime= timer();
-  constructParametricGraph(from, to, (p->nodeWeights), (p->edgeWeights), (p->partition), (p->mapping), (p->n), (p->m), totalInterEdges, numConnectedToSink, partitionSize);
+  constructParametricGraph(p, from, to, nodeWeights, edgeWeights, partition, mapping, n, m, totalInterEdges, numConnectedToSink, partitionSize);
   (p->initTime) = timer() - startTime; 
   // End time measure of initialization here
   
 
-  free((p->partition));
+  free(partition);
   free(line);
-  free((p->edgeWeights));
-  free((p->nodeWeights));
+  free(edgeWeights);
+  free(nodeWeights);
   free(from);
   free(to);
-  free((p->mapping));
+  free(mapping);
 
 
 }
 
 
 static void
-readGraphFile (CutProblem *p, void)
+readGraphFile (CutProblem *p)
 {
   double thetime = timer();
   int i;
@@ -1221,7 +1212,7 @@ readGraphFile (CutProblem *p, void)
 	interEdges = readInt();
 	connectedToSink = readInt();
 
-	int *(p->mapping) = NULL;
+	int *mapping = NULL;
 	
 
 	
@@ -1229,72 +1220,72 @@ readGraphFile (CutProblem *p, void)
 //static int *(p->invMapping) = NULL;
 //static char *inOrigS = NULL;
 
-  if (((p->mapping)= (int*) malloc (((p->n)+1) * sizeof (int))) == NULL)
+  if ((mapping= (int*) malloc (((p->n)+1) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   if (((p->invMapping)= (int*) malloc (((p->n)+1) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
 
-  if ((origDeg= (int*) malloc (((p->n)+1) * sizeof (int))) == NULL)
+  if ((p->origDeg= (int*) malloc (((p->n)+1) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
-  if ((inOrigS= (char*) malloc (((p->n)+1) * sizeof (char))) == NULL)
+  if ((p->inOrigS= (char*) malloc (((p->n)+1) * sizeof (char))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
 	for (i=0; i<=(p->n); i++)
 	{
-		inOrigS[i] = 0;
+		p->inOrigS[i] = 0;
 		(p->invMapping)[i] = 0;
-		origDeg[i] = 0;
+		p->origDeg[i] = 0;
 	}
 
-  if ((orEdges = (int*) malloc (((p->m)<<1) * sizeof (int))) == NULL)
+  if ((p->orEdges = (int*) malloc (((p->m)<<1) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
 	for( i=1; i<=(p->n); i++)
 	{
 		// assume collapsed into (p->sink) node
-		(p->mapping)[i] = 0;
+		(mapping)[i] = 0;
 	}
 
 	for( i=0; i<rsize; i++)
 	{
 		// node is in R, remove from collapsed and give new ID
 		node = readInt();
-		(p->mapping)[node] = i+2;
+		(mapping)[node] = i+2;
 		(p->invMapping)[i+2] = node;
-		inOrigS[node] = 1;
+		p->inOrigS[node] = 1;
 
 	}
 
 
 
-  printf("c (p->n)=%d (p->m)=%d\(p->n)", (p->n), (p->m));
-  printf("c rsize=%d interEdges=%d connectedToSink=%d\(p->n)", rsize, interEdges, connectedToSink);
+  printf("c n=%d m=%d\n", (p->n), (p->m));
+  printf("c rsize=%d interEdges=%d connectedToSink=%d\n", rsize, interEdges, connectedToSink);
   (p->source) = 0;
   (p->sink) = 1;
 
   (p->numNodes) = rsize + 2;
   (p->numArcs) = rsize + 2*interEdges + connectedToSink;
 
-	printf("c (p->numNodes) = %d (p->numArcs) = %d\(p->n)", (p->numNodes), (p->numArcs));
-  adjacents = NULL;
+	printf("c (p->numNodes) = %d (p->numArcs) = %d\n", (p->numNodes), (p->numArcs));
+  p->adjacents = NULL;
 
 	int *degToSink = NULL;
 
@@ -1303,55 +1294,55 @@ readGraphFile (CutProblem *p, void)
 
   if ((degToSink = (int*) malloc ((rsize) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
-  if ((weights= (int*) malloc ((p->n) * sizeof (int))) == NULL)
+  if ((p->weights= (int*) malloc ((p->n) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
-  if ((degrees= (int *) malloc ((rsize) * sizeof (int))) == NULL)
+  if ((p->degrees= (int *) malloc ((rsize) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: Could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: Could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   if (((p->inSourceSet)= (char *) malloc ((p->n) * sizeof (char))) == NULL)
   {
-    printf ("%s, %d: Could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: Could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   if (((p->bestSourceSet)= (char *) malloc ((p->n) * sizeof (char))) == NULL)
   {
-    printf ("%s, %d: Could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: Could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   if (((p->adjacencyList) = (Node *) malloc ((p->numNodes) * sizeof (Node))) == NULL)
   {
-    printf ("%s, %d: could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
-  if ((strongRoots = (Root *) malloc ((p->numNodes) * sizeof (Root))) == NULL)
+  if ((p->strongRoots = (Root *) malloc ((p->numNodes) * sizeof (Root))) == NULL)
   {
-    printf ("%s, %d: Could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: Could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   if (((p->labelCount) = (int *) malloc ((p->numNodes) * sizeof (int))) == NULL)
   {
-    printf ("%s, %d: Could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: Could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
   if (((p->arcList) = (Arc *) malloc ((p->numArcs) * sizeof (Arc))) == NULL)
   {
-    printf ("%s, %d: Could not allocate memory.\(p->n)", __FILE__, __LINE__);
+    printf ("%s, %d: Could not allocate memory.\n", __FILE__, __LINE__);
     exit (1);
   }
 
@@ -1361,7 +1352,7 @@ readGraphFile (CutProblem *p, void)
 
     (p->inSourceSet)[i] = 1;
 
-    degrees[i] = 0;
+    p->degrees[i] = 0;
 
 		degToSink[i] = 0;
   }
@@ -1371,8 +1362,8 @@ readGraphFile (CutProblem *p, void)
 
   for (i=0; i<(p->numNodes); ++i)
   {
-    initializeRoot (&strongRoots[i]);
-    initializeNode (&(p->adjacencyList)[i], i);
+    initializeRoot (p, &p->strongRoots[i]);
+    initializeNode (p, &(p->adjacencyList)[i], i);
     //adjacents[i] = 0;
     (p->labelCount)[i] = 0;
   }
@@ -1405,12 +1396,12 @@ readGraphFile (CutProblem *p, void)
       {
         w = readInt();
       }
-			orEdges[2*i] = u;
-			orEdges[2*i+1] = v;
-			origDeg[u]++;
-			origDeg[v]++;
-      int from = (p->mapping)[u];
-      int to = (p->mapping)[v];
+			p->orEdges[2*i] = u;
+			p->orEdges[2*i+1] = v;
+			p->origDeg[u]++;
+			p->origDeg[v]++;
+      int from = (mapping)[u];
+      int to = (mapping)[v];
 
 			//both are collapsed, ignore
 			if( from == (p->source) && to == (p->source) )
@@ -1436,12 +1427,12 @@ readGraphFile (CutProblem *p, void)
 
 			if (from >= 2)
 			{
-      	degrees[from-2] += w;
+      	p->degrees[from-2] += w;
 			}
 
 			if (to >= 2)
 			{
-        degrees[to-2] += w;
+        p->degrees[to-2] += w;
 			}
       ac = &(p->arcList)[currArc++];
       ac->from = from;
@@ -1449,8 +1440,8 @@ readGraphFile (CutProblem *p, void)
       ac->intercept = w*(p->APP_VAL);
       ac->capacity = w*(p->APP_VAL);
 
-      ++ adjacents[ac->from];
-      ++ adjacents[ac->to];
+      ++ p->adjacents[ac->from];
+      ++ p->adjacents[ac->to];
 
       ac = &(p->arcList)[currArc++];
       ac->from = to;
@@ -1458,39 +1449,39 @@ readGraphFile (CutProblem *p, void)
       ac->intercept = w*(p->APP_VAL);
       ac->capacity = w*(p->APP_VAL);
 
-      ++ adjacents[ac->from];
-      ++ adjacents[ac->to];
+      ++ p->adjacents[ac->from];
+      ++ p->adjacents[ac->to];
   }
 
-	printf("c collapsed edges = %d\(p->n)", collapsedEdges);
-	printf("c currArc = %d\(p->n)", currArc);
+	printf("c collapsed edges = %d\n", collapsedEdges);
+	printf("c currArc = %d\n", currArc);
 	//if (currArc != inter
 
 
 	// can probably optimize this for with only rsize iterations
 	for (i=1; i<=(p->n); i++)
 	{
-		if ((p->mapping)[i]==0)
+		if ((mapping)[i]==0)
 		{
 			continue;
 		}
 
       int to = (p->sink);
-      int from = (p->mapping)[i]; 
+      int from = (mapping)[i]; 
 
-			long long w =  degrees[from-2] + degToSink[from-2];
+			long long w =  p->degrees[from-2] + degToSink[from-2];
       ac = &(p->arcList)[currArc++];
 
       ac->from = from;
       ac->to = to;
       ac->intercept = 0;
       ac->slope= w;
-      ++ adjacents[ac->from];
-      ++ adjacents[ac->to];
+      ++ p->adjacents[ac->from];
+      ++ p->adjacents[ac->to];
 
 	}
 
-	printf("c currArc = %d\(p->n)", currArc);
+	printf("c currArc = %d\n", currArc);
 	// can probably optimize this for with only rsize iterations
 	for (i=1; i<=(p->n); i++)
 	{
@@ -1519,8 +1510,8 @@ readGraphFile (CutProblem *p, void)
 
 	}
 
-	printf("c currArc = %d\(p->n)", currArc);
-	printf("c (p->numArcs) = %d\(p->n)", (p->numArcs));
+	printf("c currArc = %d\n", currArc);
+	printf("c (p->numArcs) = %d\n", (p->numArcs));
 
   for(i=0; i<(p->numNodes); ++i)
   {
@@ -1531,7 +1522,7 @@ readGraphFile (CutProblem *p, void)
 	long long denominator = 0;
 
 	computeNumeratorDenominator(&numerator, &denominator);
-	// printf("c C(S,S-)=%lld, d(S)=%lld\(p->n)", numerator, denominator);
+	// printf("c C(S,S-)=%lld, d(S)=%lld\n", numerator, denominator);
 
 	(p->currLambda) = numerator/ denominator;
 	if ((p->isLambdaInjected))
@@ -1539,13 +1530,13 @@ readGraphFile (CutProblem *p, void)
   	(p->currLambda) = (long long) ((p->injectedLambda)*(p->APP_VAL));
 	}
    
-  printf("c Initial lambda = %lf\(p->n)", (double)(p->currLambda)/(p->APP_VAL));
+  printf("c Initial lambda = %lf\n", (double)(p->currLambda)/(p->APP_VAL));
 
   for(i=0; i<(p->numArcs); ++i)
   {
       ac = &(p->arcList)[i];
       ac->capacity = computeArcCapacity(ac, (p->currLambda));
-			//printf("c arc [%lld,%lld] intercept=%lld slope=%lld arc capacity = %lld\(p->n)",
+			//printf("c arc [%lld,%lld] intercept=%lld slope=%lld arc capacity = %lld\n",
 			//		ac->from, ac->to, ac->intercept, ac->slope, ac->capacity);
   }
       
@@ -1641,7 +1632,7 @@ simpleInitialization (CutProblem *p, void)
 static inline int 
 addRelationship (CutProblem *p, Node *newParent, Node *child) 
 {
-	//printf("c add relationship parent=%d child=%d\(p->n)", newParent - (p->adjacencyList), child-(p->adjacencyList));
+	//printf("c add relationship parent=%d child=%d\n", newParent - (p->adjacencyList), child-(p->adjacencyList));
   child->parent = newParent;
   child->next = newParent->childList;
 	
@@ -1662,7 +1653,7 @@ addRelationship (CutProblem *p, Node *newParent, Node *child)
 static inline void
 breakRelationship (CutProblem *p, Node *oldParent, Node *child) 
 {
-	//printf("c break relationship parent=%d child=%d\(p->n)", oldParent - (p->adjacencyList), child-(p->adjacencyList));
+	//printf("c break relationship parent=%d child=%d\n", oldParent - (p->adjacencyList), child-(p->adjacencyList));
   Node *current;
 
   child->parent = NULL;
@@ -1858,7 +1849,7 @@ findWeakNode (CutProblem *p, Node *strongNode, Node **weakNode)
 static void
 checkChildren (CutProblem *p, Node *curNode) 
 {
-	//printf("c checkChildren node %d with label %d (%d with same label)\(p->n)", curNode - (p->adjacencyList), curNode->label, (p->labelCount)[curNode->label]);
+	//printf("c checkChildren node %d with label %d (%d with same label)\n", curNode - (p->adjacencyList), curNode->label, (p->labelCount)[curNode->label]);
 	int iters = 0;
 	//if( (p->labelCount)[curNode->label] != 1 )
 	//{
@@ -1869,9 +1860,9 @@ checkChildren (CutProblem *p, Node *curNode)
     	{
 				if(iters>=10000)
 				{
-					//printf("c too many iters %d\(p->n)", iters);
+					//printf("c too many iters %d\n", iters);
 				}
-				//printf("c found same at iters = %d sameNode = %d\(p->n)", iters, curNode->nextScan - (p->adjacencyList));
+				//printf("c found same at iters = %d sameNode = %d\n", iters, curNode->nextScan - (p->adjacencyList));
       	return;
     	}
     
@@ -1879,15 +1870,15 @@ checkChildren (CutProblem *p, Node *curNode)
 	//}
 	//else
 	//{
-		//printf("c no same label, skipped\(p->n)");
+		//printf("c no same label, skipped\n");
 	//}
 
-	//printf("c relabel iters = %d\(p->n)", iters);
+	//printf("c relabel iters = %d\n", iters);
 
   -- (p->labelCount)[curNode->label];
   ++  curNode->label;
   ++ (p->labelCount)[curNode->label];
-	//printf("c new label of %d is %d\(p->n)", curNode - (p->adjacencyList), curNode->label);
+	//printf("c new label of %d is %d\n", curNode - (p->adjacencyList), curNode->label);
   ++ (p->numRelabels);
 
   curNode->nextArc = 0;
@@ -1896,7 +1887,7 @@ checkChildren (CutProblem *p, Node *curNode)
 static void
 processRoot (CutProblem *p, Node *strongRoot) 
 {
-	//printf("c processRoot %d\(p->n)", strongRoot - (p->adjacencyList));
+	//printf("c processRoot %d\n", strongRoot - (p->adjacencyList));
   Node *temp, *strongNode = strongRoot, *weakNode;
   Arc *out;
 
@@ -1904,7 +1895,7 @@ processRoot (CutProblem *p, Node *strongRoot)
 
   if ((out = findWeakNode (strongRoot, &weakNode)))
   {
-		//printf("c merge weakNode strongNode %d %d\(p->n)", weakNode-(p->adjacencyList) , strongNode-(p->adjacencyList));
+		//printf("c merge weakNode strongNode %d %d\n", weakNode-(p->adjacencyList) , strongNode-(p->adjacencyList));
     merge (weakNode, strongNode, out);
     pushExcess (strongRoot);
     return;
@@ -1923,7 +1914,7 @@ processRoot (CutProblem *p, Node *strongRoot)
 
       if ((out = findWeakNode (strongNode, &weakNode)))
       {
-				//printf("c merge weakNode strongNode %d %d\(p->n)", weakNode-(p->adjacencyList) , strongNode-(p->adjacencyList));
+				//printf("c merge weakNode strongNode %d %d\n", weakNode-(p->adjacencyList) , strongNode-(p->adjacencyList));
         merge (weakNode, strongNode, out);
         pushExcess (strongRoot);
         return;
@@ -2039,7 +2030,7 @@ getHighestStrongRoot (CutProblem *p, const long long theparam)
 
     strongRoot->label = 1;
 		
-	  //printf("c new label of %d is %d\(p->n)", strongRoot- (p->adjacencyList), strongRoot->label);
+	  //printf("c new label of %d is %d\n", strongRoot- (p->adjacencyList), strongRoot->label);
     -- (p->labelCount)[0];
     ++ (p->labelCount)[1];
 
@@ -2077,7 +2068,7 @@ updateCapacities (CutProblem *p, const long long theparam)
     //delta = overestimate(delta);
     if (delta < 0)
     {
-      printf ("c Error on (p->source)-adjacent arc (%d, %d): capacity decreases by %f at parameter %d.\(p->n)",
+      printf ("c Error on (p->source)-adjacent arc (%d, %d): capacity decreases by %f at parameter %d.\n",
         tempArc->from,
         tempArc->to,
         (-delta),
@@ -2107,7 +2098,7 @@ updateCapacities (CutProblem *p, const long long theparam)
     //delta = overestimate(delta);
     if (delta > 0)
     {
-      printf ("c Error on (p->sink)-adjacent arc (%d, %d): capacity %d increases to %d at parameter %d.\(p->n)",
+      printf ("c Error on (p->sink)-adjacent arc (%d, %d): capacity %d increases to %d at parameter %d.\n",
         tempArc->from,
         tempArc->to,
         tempArc->capacity,
@@ -2161,9 +2152,9 @@ pseudoflowPhase1 (CutProblem *p, void)
 	double thetime=timer();
 
 	//computeNumeratorDenominator( &css, &ds);
-	//printf("c B lambda;cut;deg;relabels\(p->n)");
+	//printf("c B lambda;cut;deg;relabels\n");
 	//c B lambda;C(S,\bar{S});d(S) 
-	//printf("c B %lf;%lld;%lld;%lf;%lld\(p->n)", (double)(p->currLambda)/(p->APP_VAL), css, ds, timer()-thetime, (p->numRelabels) );
+	//printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)(p->currLambda)/(p->APP_VAL), css, ds, timer()-thetime, (p->numRelabels) );
 
 	thetime = timer ();
 //	while ((strongRoot = getHighestStrongRoot ((p->currLambda))))  
@@ -2178,7 +2169,7 @@ pseudoflowPhase1 (CutProblem *p, void)
 	}
 	/*
 	flow_type mincut = computeMinCut();
-	printf ("c Finished solving parameter %d\nc Flow: %lf\nc Elapsed time: %.3lf\(p->n)", 
+	printf ("c Finished solving parameter %d\nc Flow: %lf\nc Elapsed time: %.3lf\n", 
 		(theparam),
 		mincut,
 		(timer () - thetime));
@@ -2195,10 +2186,10 @@ pseudoflowPhase1 (CutProblem *p, void)
 	    computeNumeratorDenominator( &css, &ds);
       long long val = css - (p->currLambda) * ds;
 
-			printf("c C(S,S_) - lambda * ds = %lld - %lld*%lld = %lld\(p->n)", css, (p->currLambda), ds, val);
+			printf("c C(S,S_) - lambda * ds = %lld - %lld*%lld = %lld\n", css, (p->currLambda), ds, val);
 	for (; (p->currLambda) >= 0; --(p->currLambda))
 	{
-		//printf("c test for lambda = %lf\(p->n)", (double)(p->currLambda)/1000);
+		//printf("c test for lambda = %lf\n", (double)(p->currLambda)/1000);
 		
 		//if((p->currLambda)%10000 == 0) printf("."); 
 		updateCapacities ((p->currLambda));
@@ -2221,7 +2212,7 @@ pseudoflowPhase1 (CutProblem *p, void)
 			// breakpoint
 	    computeNumeratorDenominator( &css, &ds);
 			//c B lambda;C(S,\bar{S});d(S) 
-	    printf("c B %lf;%lld;%lld;%lf;%lld\(p->n)", (double)(p->currLambda)/(p->APP_VAL), css, ds, timer()-thetime, (p->numRelabels) );
+	    printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)(p->currLambda)/(p->APP_VAL), css, ds, timer()-thetime, (p->numRelabels) );
 			if (css == 0) break;
 		}
 
@@ -2234,7 +2225,7 @@ static void
 computeNextCut(CutProblem *p, long long theparam)
 {
 
-  printf("c Computing mincut for lambda = %lf\(p->n)", (double)theparam/(p->APP_VAL));
+  printf("c Computing mincut for lambda = %lf\n", (double)theparam/(p->APP_VAL));
   Node *strongRoot;
 #ifdef LOWEST_LABEL
 	while ((strongRoot = getLowestStrongRoot (theparam)))  
@@ -2255,22 +2246,22 @@ incrementalCut(CutProblem *p, void)
   long long theparam = (p->currLambda);
   thetime = timer ();
 
-  printf("c ----------------------------------------------------------------------------- \(p->n)");
+  printf("c ----------------------------------------------------------------------------- \n");
   //(p->currLambda) = overestimate((p->currLambda)); //ceil( (p->currLambda) * (p->APP_VAL) ) / (p->APP_VAL);
   long long initLambda = (p->currLambda);
   long long bestLambda = (p->currLambda);
   long long numerator = 0;
   long long denominator = 0;
   copySourceSet();
-	// printf("c B lambda;cut;deg;time;relabels\(p->n)");
+	// printf("c B lambda;cut;deg;time;relabels\n");
 	//computeNumeratorDenominator( &numerator, &denominator);
-	// printf("c B %lf;%lld;%lld;%lf;%lld\(p->n)", (double)(p->currLambda)/(p->APP_VAL), numerator, denominator, timer()-thetime, (p->numRelabels) );
+	// printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)(p->currLambda)/(p->APP_VAL), numerator, denominator, timer()-thetime, (p->numRelabels) );
   int iteration = 1;
   long long val = 0;
 
   for (iteration = 1; ; ++iteration)
   {
-    printf("c Iteration %d\(p->n)", iteration);
+    printf("c Iteration %d\n", iteration);
     
     computeNextCut(theparam);
     
@@ -2278,8 +2269,8 @@ incrementalCut(CutProblem *p, void)
     
     if ( denominator == 0 )
     {
-      printf("c    Infeasible solution found. Stopping\(p->n)");
-      printf("c ----------------------------------------------------------------------------- \(p->n)");
+      printf("c    Infeasible solution found. Stopping\n");
+      printf("c ----------------------------------------------------------------------------- \n");
       break;
     }
 
@@ -2288,26 +2279,26 @@ incrementalCut(CutProblem *p, void)
     bestLambda = (p->currLambda);
     if ( val == 0 )
     {
-      printf("c      Optimal solution Found\(p->n)");
+      printf("c      Optimal solution Found\n");
     }
-    printf("c      Cut value: %lld\(p->n)", numerator/(p->APP_VAL));
-    printf("c      Weight value: %lld\(p->n)", denominator);
-    printf("c      conductance* value: %lf\(p->n)", (double)(p->currLambda)/(p->APP_VAL) );
+    printf("c      Cut value: %lld\n", numerator/(p->APP_VAL));
+    printf("c      Weight value: %lld\n", denominator);
+    printf("c      conductance* value: %lf\n", (double)(p->currLambda)/(p->APP_VAL) );
 
     copySourceSet();
     if (val == 0)
     {
-      printf("c ----------------------------------------------------------------------------- \(p->n)");
+      printf("c ----------------------------------------------------------------------------- \n");
       break;
     }
 		theparam = (p->currLambda);
-    printf("c      Updating capacities for lambda = %lf\(p->n)", (double)(p->currLambda)/(p->APP_VAL));
+    printf("c      Updating capacities for lambda = %lf\n", (double)(p->currLambda)/(p->APP_VAL));
     updateCapacities(theparam);
-    printf("c ----------------------------------------------------------------------------- \(p->n)");
+    printf("c ----------------------------------------------------------------------------- \n");
   }
 
 
-  printf("o Final conductance* found is %lf\(p->n)", (double) bestLambda/(p->APP_VAL));
+  printf("o Final conductance* found is %lf\n", (double) bestLambda/(p->APP_VAL));
   long long volS = 0;
   long long volSComp = 0;
   long long cutValue = 0;
@@ -2317,26 +2308,26 @@ incrementalCut(CutProblem *p, void)
   volSComp += (p->initialVolumeComplement);
   double finalValue = ( (double)cutValue / fmin(volS, volSComp)) / (p->APP_VAL) ;
 
-  printf("c \\frac{C(S,\\bar{S})}{ min(q(S), q(\\bar{S}) ) } = \\frac{%lld}{ min(%lld, %lld ) } = %lf\(p->n)",
+  printf("c \\frac{C(S,\\bar{S})}{ min(q(S), q(\\bar{S}) ) } = \\frac{%lld}{ min(%lld, %lld ) } = %lf\n",
       cutValue/(p->APP_VAL), volS, volSComp, finalValue );
 
 
-  //printf("c Computing mincut for lambda = %lf\(p->n)", (double)(p->currLambda)/(p->APP_VAL));
+  //printf("c Computing mincut for lambda = %lf\n", (double)(p->currLambda)/(p->APP_VAL));
   //while ((strongRoot = getHighestStrongRoot (theparam)))  
 
   //computeNextCut(theparam);
 
 	// long long mincut = computeMinCut();
-	// printf("c Initial mincut is = %lld\(p->n)", mincut);
+	// printf("c Initial mincut is = %lld\n", mincut);
 
 	//computeNumeratorDenominator( &numerator, &denominator);
-	//printf("c B %lf;%lld;%lld\(p->n)", (double)(p->currLambda)/(p->APP_VAL), numerator, denominator );
+	//printf("c B %lf;%lld;%lld\n", (double)(p->currLambda)/(p->APP_VAL), numerator, denominator );
   //(p->currLambda) = css / qs;
 
-  // printf("c C(S,S-)/d(S) = %lld/%lld = %lld\(p->n)", numerator, denominator, ceil_div(numerator, denominator));
+  // printf("c C(S,S-)/d(S) = %lld/%lld = %lld\n", numerator, denominator, ceil_div(numerator, denominator));
   //long long val = numerator - (p->currLambda) * denominator;
 
-  // printf("C(S,S-) - lambda * d(S) = %lld\(p->n)", val);
+  // printf("C(S,S-) - lambda * d(S) = %lld\n", val);
 	//int better = 1;
 
   /*
@@ -2344,10 +2335,10 @@ incrementalCut(CutProblem *p, void)
   {
     // compute new lambda
 		better = 0;
-    //printf("c Iteration %d\(p->n)", iteration++);
-    printf("c      Cut value: %lld\(p->n)", numerator/(p->APP_VAL));
-    printf("c      Weight value: %lld\(p->n)", denominator);
-    printf("c      conductance* value: %lf\(p->n)", (double)numerator/denominator/(p->APP_VAL) );
+    //printf("c Iteration %d\n", iteration++);
+    printf("c      Cut value: %lld\n", numerator/(p->APP_VAL));
+    printf("c      Weight value: %lld\n", denominator);
+    printf("c      conductance* value: %lf\n", (double)numerator/denominator/(p->APP_VAL) );
     (p->currLambda) = numerator / denominator ;//ceil_div(numerator, denominator);
     if (denominator == 0 ) break;
 		theparam = (p->currLambda);
@@ -2358,7 +2349,7 @@ incrementalCut(CutProblem *p, void)
       copySourceSet();
     }
 
-    printf("c updating capacities for lambda = %lf\(p->n)", (double)currlambda/app_val);
+    printf("c updating capacities for lambda = %lf\n", (double)currlambda/app_val);
     updatecapacities(theparam);
 
 #ifdef LOWEST_LABEL
@@ -2374,8 +2365,8 @@ incrementalCut(CutProblem *p, void)
 
 		if( denominator != 0 )
 		{
-	    //printf("c B %lf;%lld;%lld;%lf;%lld\(p->n)", (double)(p->currLambda)/(p->APP_VAL), numerator, denominator, timer()-thetime, (p->numRelabels) );
-  		//printf("c C(S,S-)/d(S) = %lld/%lld = %lld\(p->n)", numerator, denominator, numerator/denominator);
+	    //printf("c B %lf;%lld;%lld;%lf;%lld\n", (double)(p->currLambda)/(p->APP_VAL), numerator, denominator, timer()-thetime, (p->numRelabels) );
+  		//printf("c C(S,S-)/d(S) = %lld/%lld = %lld\n", numerator, denominator, numerator/denominator);
 		}
 		else
 		{
@@ -2383,7 +2374,7 @@ incrementalCut(CutProblem *p, void)
 		}
 		val = numerator - (p->currLambda) * denominator;
     
-  	//printf("C(S,S-) - lambda * d(S) = %lld\(p->n)", val);
+  	//printf("C(S,S-) - lambda * d(S) = %lld\n", val);
   }
 
 
@@ -2397,19 +2388,19 @@ incrementalCut(CutProblem *p, void)
   double totalTime = timer()-thetime;
 
   */
-  //printf("c %d,%d,%.4lf,%.4lf,%.4lf,%.4lf,%d\(p->n)", (p->n), (p->m), (p->initTime), totalTime, (double)initLambda/(p->APP_VAL), (double)bestLambda/(p->APP_VAL),iteration);
-  //printf("o Final conductance* found is %lf\(p->n)", (double) bestLambda/(p->APP_VAL));
-  //printf("s Time to initialize was %lf\(p->n)", (p->initTime));
-  //printf("s Total time was %lf\(p->n)", totalTime);
+  //printf("c %d,%d,%.4lf,%.4lf,%.4lf,%.4lf,%d\n", (p->n), (p->m), (p->initTime), totalTime, (double)initLambda/(p->APP_VAL), (double)bestLambda/(p->APP_VAL),iteration);
+  //printf("o Final conductance* found is %lf\n", (double) bestLambda/(p->APP_VAL));
+  //printf("s Time to initialize was %lf\n", (p->initTime));
+  //printf("s Total time was %lf\n", totalTime);
   if ( dumpSourceSetFile != NULL )
 	{
-    printf("c Dumping (p->source) set to file\(p->n)");
+    printf("c Dumping (p->source) set to file\n");
 		dumpSourceSet(dumpSourceSetFile);
 		fclose(dumpSourceSetFile);
   }	
   else
   {
-    printf("c To dump (p->source) set into file, please use option --dumpSourceSet filename\(p->n)");
+    printf("c To dump (p->source) set into file, please use option --dumpSourceSet filename\n");
   }
 
 }
@@ -2423,7 +2414,7 @@ checkOptimality (CutProblem *p, void)
   excess = (long long *) malloc ((p->numNodes) * sizeof (long long));
   if (!excess)
   {
-    printf ("%s Line %d: Out of memory\(p->n)", __FILE__, __LINE__);
+    printf ("%s Line %d: Out of memory\n", __FILE__, __LINE__);
     exit (1);
   }
 
@@ -2442,7 +2433,7 @@ checkOptimality (CutProblem *p, void)
     if (((p->arcList)[i].flow > (p->arcList)[i].capacity) || ((p->arcList)[i].flow < 0)) 
     {
       check = 0;
-      printf("c Capacity constraint violated on arc (%d, %d)\(p->n)", 
+      printf("c Capacity constraint violated on arc (%d, %d)\n", 
         (p->arcList)[i].from,
         (p->arcList)[i].to);
     }
@@ -2457,7 +2448,7 @@ checkOptimality (CutProblem *p, void)
       if (excess[i]) 
       {
         check = 0;
-        printf ("c Flow balance constraint violated in node %d. Excess = %lld\(p->n)", 
+        printf ("c Flow balance constraint violated in node %d. Excess = %lld\n", 
           i+1,
           excess[i]);
       }
@@ -2466,7 +2457,7 @@ checkOptimality (CutProblem *p, void)
 
   if (check)
   {
-    printf ("c\nc Solution checks as feasible.\(p->n)");
+    printf ("c\nc Solution checks as feasible.\n");
   }
 
   check = 1;
@@ -2474,13 +2465,13 @@ checkOptimality (CutProblem *p, void)
   if (excess[(p->sink)] != mincut) 
   {
     check = 0;
-    printf("c Flow is not optimal - max flow does not equal min cut!\nc\(p->n)");
+    printf("c Flow is not optimal - max flow does not equal min cut!\nc\n");
   }
 
   if (check) 
   {
-    printf ("c\nc Solution checks as optimal.\nc \(p->n)");
-    printf ("s Max Flow            : %lf\(p->n)", mincut);
+    printf ("c\nc Solution checks as optimal.\nc \n");
+    printf ("s Max Flow            : %lf\n", mincut);
   }
 
   free (excess);
@@ -2768,7 +2759,7 @@ displayBreakpoints (CutProblem *p, void)
   int i;
   for (i=0; i<(p->numNodes); ++i)
   {
-    printf ("(p->n) %d %d\(p->n)", (i+1), (p->adjacencyList)[i].breakpoint);
+    printf ("(p->n) %d %d\n", (i+1), (p->adjacencyList)[i].breakpoint);
   }
 }
 
@@ -2808,39 +2799,39 @@ freeMemory (CutProblem *p, void)
 
 void printHelp(int argc, char *argv[])
 {
-  printf("Usage : %s [OPTIONS]                                        \(p->n)\(p->n)", argv[0]);
-  printf("Options:\(p->n)");
+  printf("Usage : %s [OPTIONS]                                        \n\(p->n)", argv[0]);
+  printf("Options:\n");
 
-  printf("  --help                 print this help message                \(p->n)");
-  printf("  --accuracy N           set the accuracy to N decimal places   \(p->n)");
-  printf("                         note that a big N may induce errors on \(p->n)");
-  printf("                         graphs that are big or have big weights\(p->n)");
-  printf("                         by default, 4 decimal places           \(p->n)");
-  printf("  --injectLambda L       start incremental procedure with L     \(p->n)");
-  //printf("  --(p->weightedEdges)        enable if input has weights on edges   \(p->n)");
-  //printf("  --(p->weightedNodes)        enable if input has weights on nodes   \(p->n)");
-  printf("  --dumpSourceSet FILE   dump list of nodes in optimal solution \(p->n)");
-  printf("                         to FILE                                \(p->n)");
-  printf("  --(p->seedSet) ID           output solution is a subset of the     \(p->n)");
-  printf("                         nodes with (p->partition) distinct to ID    \(p->n)");
+  printf("  --help                 print this help message                \n");
+  printf("  --accuracy N           set the accuracy to N decimal places   \n");
+  printf("                         note that a big N may induce errors on \n");
+  printf("                         graphs that are big or have big weights\n");
+  printf("                         by default, 4 decimal places           \n");
+  printf("  --injectLambda L       start incremental procedure with L     \n");
+  //printf("  --(p->weightedEdges)        enable if input has weights on edges   \n");
+  //printf("  --(p->weightedNodes)        enable if input has weights on nodes   \n");
+  printf("  --dumpSourceSet FILE   dump list of nodes in optimal solution \n");
+  printf("                         to FILE                                \n");
+  printf("  --(p->seedSet) ID           output solution is a subset of the     \n");
+  printf("                         nodes with (p->partition) distinct to ID    \n");
 
-  printf("\(p->n)\nNote that this program read from stdin\(p->n)");
-  printf("An example command is \'%s < mygraph.txt\' to read from file\(p->n)", argv[0]);
-  printf("\(p->n)");
-  printf("The format of the input is as follows: \(p->n)");
-  printf("\(p->n)");
-  printf("N M\(p->n)");
-  printf("[WEIGHT_NODE_1]\(p->n)");
-  printf("[WEIGHT_NODE_2]\(p->n)");
-  printf("...\(p->n)");
-  printf("[WEIGHT_NODE_N]\(p->n)");
-  printf("FROM_EDGE_1 TO_EDGE_1 [WEIGHT_EDGE_1]\(p->n)");
-  printf("FROM_EDGE_2 TO_EDGE_2 [WEIGHT_EDGE_2]\(p->n)");
-  printf("...\(p->n)");
-  printf("FROM_EDGE_M TO_EDGE_M [WEIGHT_EDGE_M]\(p->n)");
-  printf("\(p->n)");
-  printf("Remember that for weighted graphs, options --(p->weightedEdges) \(p->n)");
-  printf("and/or --(p->weightedNodes) must be used.  \(p->n)");
+  printf("\n\nNote that this program read from stdin\(p->n)");
+  printf("An example command is \'%s < mygraph.txt\' to read from file\n", argv[0]);
+  printf("\n");
+  printf("The format of the input is as follows: \n");
+  printf("\n");
+  printf("N M\n");
+  printf("[WEIGHT_NODE_1]\n");
+  printf("[WEIGHT_NODE_2]\n");
+  printf("...\n");
+  printf("[WEIGHT_NODE_N]\n");
+  printf("FROM_EDGE_1 TO_EDGE_1 [WEIGHT_EDGE_1]\n");
+  printf("FROM_EDGE_2 TO_EDGE_2 [WEIGHT_EDGE_2]\n");
+  printf("...\n");
+  printf("FROM_EDGE_M TO_EDGE_M [WEIGHT_EDGE_M]\n");
+  printf("\n");
+  printf("Remember that for weighted graphs, options --(p->weightedEdges) \n");
+  printf("and/or --(p->weightedNodes) must be used.  \n");
 }
 
 void parseParameters(CutProblem *p, int argc, char *argv[])
@@ -2886,8 +2877,8 @@ void parseParameters(CutProblem *p, int argc, char *argv[])
 		}
     else
     {
-      printf("%s: invalid argument %s\(p->n)", argv[0], argv[1]);
-      printf("Try \'%s --help\' for more information.\(p->n)", argv[0]); 
+      printf("%s: invalid argument %s\n", argv[0], argv[1]);
+      printf("Try \'%s --help\' for more information.\n", argv[0]); 
       exit(-1);
     }
 
@@ -2901,15 +2892,15 @@ main(int argc, char ** argv)
 
   if (argc < 3)
   {
-    fprintf(stderr, "Error, not enough arguments provided\(p->n)");
-    fprintf(stderr, "Usage: \'%s GRAPH_FILE PARTITION_FILE [OPTIONS]\'\(p->n)", argv[0]);
-    fprintf(stderr, "Try \'%s --help\' for more information\(p->n)", argv[0]);
+    fprintf(stderr, "Error, not enough arguments provided\n");
+    fprintf(stderr, "Usage: \'%s GRAPH_FILE PARTITION_FILE [OPTIONS]\'\n", argv[0]);
+    fprintf(stderr, "Try \'%s --help\' for more information\n", argv[0]);
     exit(0xbeef);
   }
 
-	printf ("c Incremental cut procedure for minimum conductance*\(p->n)");
-	printf ("c Input graph file: %s\(p->n)", argv[1]);
-	printf ("c Input (p->partition) file: %s\(p->n)", argv[2]);
+	printf ("c Incremental cut procedure for minimum conductance*\n");
+	printf ("c Input graph file: %s\n", argv[1]);
+	printf ("c Input (p->partition) file: %s\n", argv[2]);
 
   FILE *graphFile = fopen(argv[1], "r");
   FILE *partitionFile = fopen(argv[2], "r");
@@ -2925,18 +2916,18 @@ main(int argc, char ** argv)
   fclose(graphFile);
   fclose(partitionFile);
 #ifdef PROGRESS
-  printf ("c Finished reading file.\(p->n)"); fflush (stdout);
+  printf ("c Finished reading file.\n"); fflush (stdout);
 #endif
 
   simpleInitialization ();
 
 #ifdef PROGRESS
-  printf ("c Finished initialization.\(p->n)"); fflush (stdout);
+  printf ("c Finished initialization.\n"); fflush (stdout);
 #endif
 
   double thetime = timer();
 #ifdef SIMPLE_PARAMETRIC	
-  printf ("c Using simple parametric.\(p->n)"); fflush (stdout);
+  printf ("c Using simple parametric.\n"); fflush (stdout);
 	pseudoflowPhase1();
   displayBreakpoints ();
 #else
@@ -2944,13 +2935,13 @@ main(int argc, char ** argv)
   thetime = timer();
   incrementalCut();
   double incrementalCutTime = timer() - thetime;
-  printf("c Input read time : %lf\(p->n)", (p->readTime));
-  printf("c Parametric Graph initialization time : %lf\(p->n)", (p->initTime));
-  printf("c Incremental cut time : %lf\(p->n)", incrementalCutTime);
+  printf("c Input read time : %lf\n", (p->readTime));
+  printf("c Parametric Graph initialization time : %lf\n", (p->initTime));
+  printf("c Incremental cut time : %lf\n", incrementalCutTime);
 #endif
 
 #ifdef PROGRESS
-  printf ("c Finished phase 1.\(p->n)"); fflush (stdout);
+  printf ("c Finished phase 1.\n"); fflush (stdout);
 #endif
 
 
@@ -2959,14 +2950,14 @@ main(int argc, char ** argv)
   checkOptimality ();
 #endif
 
-  printf ("c Number of nodes     : %d\(p->n)", (p->numNodes));
-  printf ("c Number of arcs      : %d\(p->n)", (p->numArcs));
+  printf ("c Number of nodes     : %d\n", (p->numNodes));
+  printf ("c Number of arcs      : %d\n", (p->numArcs));
 #ifdef STATS
-  printf ("c Number of arc scans : %lld\(p->n)", (p->numArcScans));
-  printf ("c Number of mergers   : %d\(p->n)", (p->numMergers));
-  printf ("c Number of pushes    : %lld\(p->n)", (p->numPushes));
-  printf ("c Number of relabels  : %d\(p->n)", (p->numRelabels));
-  printf ("c Number of gaps      : %d\(p->n)", (p->numGaps));
+  printf ("c Number of arc scans : %lld\n", (p->numArcScans));
+  printf ("c Number of mergers   : %d\n", (p->numMergers));
+  printf ("c Number of pushes    : %lld\n", (p->numPushes));
+  printf ("c Number of relabels  : %d\n", (p->numRelabels));
+  printf ("c Number of gaps      : %d\n", (p->numGaps));
 #endif
 
 #ifdef BREAKPOINTS
